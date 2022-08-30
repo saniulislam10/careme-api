@@ -17,17 +17,20 @@ exports.addToCart = async (req, res, next) => {
   try {
 
     const product = await Product.findOne({'_id':data.product})
-    let Vindex;
-    product.variantFormArray.map((q, index) => {
-      if (q.variantSku == data.variant.variantSku) {
-        return (
-          this.Vindex = index
-        )
-      }
-    })
+    if(product.hasVariant){
 
-    let v = (Object.values(product?.variantDataArray[this.Vindex]).toString()).replace(',', '/')
-    data.variant.variant = v
+      let Vindex;
+      product.variantFormArray.map((q, index) => {
+        if (q.variantSku == data.variant.variantSku) {
+          return (
+            this.Vindex = index
+          )
+        }
+      })
+        
+      let v = (Object.values(product?.variantDataArray[this.Vindex]).toString()).replace(',', '/')
+      data.variant.variant = v;
+    }
     
     const final = { ...data, ...{ user: userId } };
 
@@ -109,7 +112,7 @@ exports.getCartItemByUserId = async (req, res, next) => {
         populate: {
           path: "product",
           select:
-            "name slug sellingPrice tax sku medias images hasTax redeemPointsType redeemPoints earnPointsType earnPoints canEarnPoints canRedeemPoints partialPaymentType partialPayment canPartialPayment hasVariant variants options variantFormArray variantDataArray",
+            "name slug vendor sellingPrice tax sku medias images hasTax redeemPointsType redeemPoints earnPointsType earnPoints canEarnPoints canRedeemPoints partialPaymentType partialPayment canPartialPayment hasVariant variants options variantFormArray variantDataArray",
         },
       })
       .select("carts");

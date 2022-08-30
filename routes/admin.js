@@ -11,7 +11,7 @@ const checkIpWhitelist = require('../middileware/check-ip-whitelist');
 const router = express.Router();
 
 /**
- * http://localhost:5502/api/admin
+ * http://localhost:5502/api/admin/registration
  */
 
 

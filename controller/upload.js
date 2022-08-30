@@ -131,6 +131,8 @@ exports.multerConfigSingleImageOriginal = multer({
 
 
 exports.uploaderImageOriginal = (req, res, next) => {
+    console.log("hello image");
+    console.log(req);
     if (req.file == undefined) {
         res.status(404).json({
             message: 'No Image Provided'

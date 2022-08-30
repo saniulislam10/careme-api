@@ -102,6 +102,10 @@ const schema = new Schema({
         type: Number,
         required: false
     },
+    purchaseTax: {
+        type: Number,
+        required: false
+    },
     wholeSalePrice: {
         type: Number,
         required: false
@@ -136,6 +140,10 @@ const schema = new Schema({
         required: false
     },
     quantity: {
+        type: Number,
+        required: false
+    },
+    committedQuantity: {
         type: Number,
         required: false
     },
@@ -197,6 +205,10 @@ const schema = new Schema({
                 required: false
             },
             variantContinueSelling: {
+                type: Boolean,
+                required: false
+            },
+            variantDisplay: {
                 type: Boolean,
                 required: false
             },

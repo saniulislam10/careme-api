@@ -26,6 +26,14 @@ const schema = new Schema({
             type: Number,
             required: false
         },
+        purchaseId: {
+            type: Number,
+            required: false
+        },
+        adjustmentId: {
+            type: Number,
+            required: false
+        },
     },
     {
         timestamps: true,

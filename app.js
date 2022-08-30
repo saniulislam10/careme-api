@@ -26,6 +26,8 @@
  const adminRoutes = require('./routes/admin');
  const searchRoutes = require('./routes/search.js'); 
  const productRoutes = require('./routes/product');
+ const adjustmentRoutes = require('./routes/adjustment');
+ const purchaseRoutes = require('./routes/purchase');
  const categoryRoutes = require('./routes/product-category');
  const subCategoryRoutes = require('./routes/product-sub-category');
  const bulkSmsRoutes = require("./routes/bulk-sms");
@@ -96,6 +98,8 @@ const cityRoutes = require('./routes/city');
  app.use('/api/admin', adminRoutes);
  app.use('/api/search', searchRoutes);
  app.use('/api/product', productRoutes);
+ app.use('/api/adjustment', adjustmentRoutes);
+ app.use('/api/purchase', purchaseRoutes);
  app.use('/api/product-category', categoryRoutes);
  app.use('/api/product-sub-category', subCategoryRoutes);
  app.use('/api/bulk-sms', bulkSmsRoutes);
@@ -124,7 +128,8 @@ app.use('/api/zila', zilaRoutes);
   * MAIN BASE GET PATH
   */
  app.get('/', (req, res) => {
-     res.send('<div style="width: 100%; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center"><h1 style="color: blueviolet; text-transform: uppercase">TEST API RUNNING...</h1><p style="color: lightcoral">Powered by SOFTLAB IT TEAM</p></div>')
+    console.log(req.ip);
+     res.send('<div style="width: 100%; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center"><h1 style="color: blueviolet; text-transform: uppercase">TEST API RUNNING...</h1><p style="color: lightcoral">Powered by Saniul Islam</p></div>')
  })
  
  
@@ -235,6 +240,7 @@ app.use('/api/zila', zilaRoutes);
          const port = process.env.PORT || 3000;
          app.listen(port, () => console.log(`Server is running at port:${port}`));
          console.log('Connected to mongoDB');
+         
  
      })
      .catch(err => {

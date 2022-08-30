@@ -53,10 +53,17 @@ exports.placeOrder = async (req, res, next) => {
 
     for (let i = 0; i < orderData.orderedItems.length; i++) {
       const orderitem = orderData.orderedItems[i];
-
       const orderedProductWithVarients = await Product.findOne({
         _id: orderitem.product,
       });
+      await Product.findOneAndUpdate(
+        { _id: orderitem.product },
+        {
+          $inc: {
+            committedQuantity: orderitem.quantity,
+          }
+        }
+      ).exec();
 
       if (orderedProductWithVarients.hasVariant === true) {
         varforQty = orderedProductWithVarients.variantFormArray.filter(
@@ -103,19 +110,19 @@ exports.placeOrder = async (req, res, next) => {
           ).exec();
         }
       } else {
+        
         let qty = orderedProductWithVarients.quantity - orderitem.quantity;
-        let reOrderQty =
-          orderedProductWithVarients.reOrder - orderitem.quantity;
+        let reOrderQty = orderedProductWithVarients.reOrder - orderitem.quantity;
         if (qty <= reOrderQty && qty > 0) {
           await Product.findOneAndUpdate(
             { _id: orderitem.product },
-            { isReOrder: true }
+            { isReOrder: true },
           );
         }
         if (qty <= 0) {
           await Product.findOneAndUpdate(
             { _id: orderitem.product },
-            { isStockOut: true }
+            { isStockOut: true },
           );
         }
       }

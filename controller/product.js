@@ -138,6 +138,7 @@ exports.getAllProducts = async (req, res, next) => {
   try {
     let paginate = req.body.paginate;
     let filter = req.body.filter;
+    console.log("get products");
 
     let queryData;
     let dataCount;
@@ -191,6 +192,7 @@ exports.getAllProducts = async (req, res, next) => {
     priceRange.maxPrice = temp2.length > 0 ? temp2[0].price : 0;
 
     if (filter) {
+      console.log("Product filter",filter);
       queryData = Product.find(filter);
     } else {
       queryData = Product.find();
@@ -344,6 +346,7 @@ exports.getProductsByDynamicSort = async (req, res, next) => {
 
     // Filter
     if (filter) {
+      console.log("Filtering by", filter)
       queryDoc = Product.find(filter);
     } else {
       queryDoc = Product.find();
