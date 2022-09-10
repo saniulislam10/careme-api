@@ -12,7 +12,8 @@ const schema = new Schema({
     },
     username: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
     password: {
         type: String,
@@ -25,6 +26,10 @@ const schema = new Schema({
     phoneNo: {
         type: String,
         required: true
+    },
+    address: {
+        type: String,
+        required: false
     },
     profileImg: {
         type: String,

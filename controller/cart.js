@@ -104,6 +104,7 @@ exports.editVariantInCart = async (req, res, next) => {
 
 exports.getCartItemByUserId = async (req, res, next) => {
   const userId = req.userData.userId;
+  console.log("cart get | user id : ", userId);
 
   try {
     const data = await User.findOne({ _id: userId })
@@ -116,7 +117,8 @@ exports.getCartItemByUserId = async (req, res, next) => {
         },
       })
       .select("carts");
-
+  
+      console.log(data);
     res.status(200).json({
       data: data && data.carts ? data.carts : [],
       message: "All Products Fetched Successfully!",
@@ -132,7 +134,7 @@ exports.getCartItemByUserId = async (req, res, next) => {
 
 exports.getCartItemTypeByUserId = async (req, res, next) => {
   const userId = req.userData.userId;
-  console.log('HER')
+  console.log('user id : ', userId);
 
   try {
     const data = await User.findOne({ _id: userId })
@@ -146,16 +148,7 @@ exports.getCartItemTypeByUserId = async (req, res, next) => {
       })
       .select("carts");
 
-    let type;
-    if (data.carts[0]) {
-      if (data.carts[0].link) {
-        type = "request";
-      } else {
-        type = "regular";
-      }
-    } else {
-      type = 'None';
-    }
+    let type = "regular";
 
     res.status(200).json({
       data: type,

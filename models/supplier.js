@@ -6,29 +6,21 @@ const schema = new Schema({
         type: String,
         required: true
     },
-    slug: {
+    link: {
         type: String,
         required: false
     },
-    tags: {
+    phoneNo: {
+        type: String,
+        required: true
+    },
+    address: {
         type: String,
         required: false
-    },
-    count: {
-        type: Number,
-        required: false
-    },
-    
-    parent: {
-        type: Schema.Types.ObjectId,
-        required: false
-    },
-
-
-
+    }
 }, {
     timestamps: true
 });
 
 
-module.exports = mongoose.model('SubCategory', schema);
+module.exports = mongoose.model('Supplier', schema);

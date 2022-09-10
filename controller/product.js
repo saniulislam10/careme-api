@@ -7,6 +7,7 @@ const schedule = require('node-schedule');
 exports.addSingleProduct = async (req, res, next) => {
   try {
     const data = req.body;
+    console.log(data)
     const dataExists = await Product.findOne({ slug: data.slug }).lean();
     const skuExists = await Product.findOne({ sku: data.sku }).lean();
 
@@ -42,7 +43,9 @@ exports.getSingleProductById = async (req, res, next) => {
 
   try {
     const query = { _id: id };
-    const data = await Product.findOne(query);
+    const data = await Product.findOne(query).populate('productType');
+
+    console.log(data);
     // .populate('attributes')
     // .populate('brand')
     // .populate('category')
@@ -117,7 +120,6 @@ exports.deleteProductById = async (req, res, next) => {
     const date = new Date();
     date.setSeconds(date.getSeconds() + 60);
     const job = schedule.scheduleJob(date, async () => {
-      console.log('delete sada', new Date().toString());
       await ArchivedProduct.deleteOne({sku: data.sku});
     });
     console.log("timing");
@@ -138,61 +140,11 @@ exports.getAllProducts = async (req, res, next) => {
   try {
     let paginate = req.body.paginate;
     let filter = req.body.filter;
-    console.log("get products");
 
     let queryData;
     let dataCount;
 
-    let priceRange = {
-      minPrice: 0,
-      maxPrice: 0,
-    };
-    let minPrice;
-    let maxPrice;
-
-    let type = "default";
-    let i = -1;
-
     if (filter) {
-      if ("categorySlug" in filter) {
-        type = "cat";
-        i = index;
-      }
-      if ("subCategorySlug" in filter) {
-        type = "subCat";
-        i = index;
-      }
-      if ("tags" in filter) {
-        type = "tag";
-        i = index;
-      }
-
-      if (type == "cat") {
-        minPrice = Product.find(filter[i]).sort({ price: 1 }).limit(1);
-        maxPrice = Product.find(filter[i]).sort({ price: -1 }).limit(1);
-      } else if (type == "subCat") {
-        minPrice = Product.find(filter[i]).sort({ price: 1 }).limit(1);
-        maxPrice = Product.find(filter[i]).sort({ price: -1 }).limit(1);
-      } else if (type == "tag") {
-        minPrice = Product.find(filter[i]).sort({ price: 1 }).limit(1);
-        maxPrice = Product.find(filter[i]).sort({ price: -1 }).limit(1);
-      } else {
-        minPrice = Product.find().sort({ price: 1 }).limit(1);
-        maxPrice = Product.find().sort({ price: -1 }).limit(1);
-      }
-    } else {
-      minPrice = Product.find().sort({ price: 1 }).limit(1);
-      maxPrice = Product.find().sort({ price: -1 }).limit(1);
-    }
-
-    const temp1 = await minPrice;
-    const temp2 = await maxPrice;
-
-    priceRange.minPrice = temp1.length > 0 ? temp1[0].price : 0;
-    priceRange.maxPrice = temp2.length > 0 ? temp2[0].price : 0;
-
-    if (filter) {
-      console.log("Product filter",filter);
       queryData = Product.find(filter);
     } else {
       queryData = Product.find();
@@ -204,14 +156,7 @@ exports.getAllProducts = async (req, res, next) => {
         .limit(Number(paginate.pageSize));
     }
 
-    const data = await queryData
-      .populate("parentCategory")
-      // .populate('attributes')
-      // .populate('brand')
-      // .populate('category')
-      // .populate('subCategory')
-      // .populate('tags')
-      .sort({ createdAt: -1 });
+    const data = await queryData.sort({ createdAt: -1 });
 
     if (filter) {
       dataCount = await Product.countDocuments(filter);
@@ -221,7 +166,6 @@ exports.getAllProducts = async (req, res, next) => {
 
     res.status(200).json({
       data: data,
-      priceRange: priceRange,
       count: dataCount,
     });
   } catch (err) {
@@ -346,7 +290,6 @@ exports.getProductsByDynamicSort = async (req, res, next) => {
 
     // Filter
     if (filter) {
-      console.log("Filtering by", filter)
       queryDoc = Product.find(filter);
     } else {
       queryDoc = Product.find();
@@ -370,7 +313,7 @@ exports.getProductsByDynamicSort = async (req, res, next) => {
       queryDoc.select(select);
     }
 
-    const data = await queryDoc.populate("parentCategory");
+    const data = await queryDoc.populate("vendor");
 
     const count = await Product.countDocuments({ hasLink: false });
 
@@ -469,6 +412,7 @@ exports.getProductsBySearch = async (req, res, next) => {
   try {
     // Query Text
     const search = req.query.q;
+    console.log(search);
 
     // Additional Filter
     const filter = req.body.filter;
@@ -734,47 +678,5 @@ exports.getSelectedProductDetails = async (req, res, next) => {
     });
   } catch (err) {
     console.log(err);
-  }
-};
-
-exports.getSpecificProductsBycatId = async (req, res, next) => {
-  try {
-    const dataIds = req.body.slugs;
-    const query = { parentCategory: { $in: dataIds } };
-    const data = await Product.find(query);
-    // .select('_id name slug image price discountPercent availableQuantity author authorName');
-    // console.log('this is compare list')
-    // console.log(data)
-    res.status(200).json({
-      data: data,
-    });
-  } catch (err) {
-    console.log(err);
-    if (!err.statusCode) {
-      err.statusCode = 500;
-      err.message = "Something went wrong on database operation!";
-    }
-    next(err);
-  }
-};
-
-exports.getSpecificProductsBySubCatId = async (req, res, next) => {
-  try {
-    const dataIds = req.body.slugs;
-    const query = { childCategory: { $in: dataIds } };
-    const data = await Product.find(query);
-    // .select('_id name slug image price discountPercent availableQuantity author authorName');
-    // console.log('this is compare list')
-    // console.log(data)
-    res.status(200).json({
-      data: data,
-    });
-  } catch (err) {
-    console.log(err);
-    if (!err.statusCode) {
-      err.statusCode = 500;
-      err.message = "Something went wrong on database operation!";
-    }
-    next(err);
   }
 };

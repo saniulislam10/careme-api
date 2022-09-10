@@ -11,7 +11,8 @@ const schema = new Schema({
         required: true
     },
     brand: {
-        type: String,
+        type: Schema.Types.ObjectId,
+        ref: 'Brand',
         required: false
     },
     description: {
@@ -81,23 +82,16 @@ const schema = new Schema({
         required: false
     },
     vendor: {
-        type: String,
-        required: false
-    },
-    parentCategory: {
         type: Schema.Types.ObjectId,
-        ref: 'Category',
+        ref: 'Admin',
         required: false
     },
-    childCategory: {
+    productType: [{
         type: Schema.Types.ObjectId,
-        ref: 'SubCategory',
+        ref: 'ProductType',
         required: false
-    },
-    tags: {
-        type: String,
-        required: false
-    },
+    }],
+    tags: [],
     costPrice: {
         type: Number,
         required: false
@@ -159,25 +153,17 @@ const schema = new Schema({
         type: Boolean,
         required: false
     },
-    // physical/online
     isPhysicalProduct: {
-        type: String,
+        type: Boolean,
         required: false
     },
     weight: {
         type: Number,
         required: true
     },
-    weightType: {
-        type: Number,
-        required: false
-    },
     country: {
-        type: String,
-        required: false
-    },
-    hscode: {
-        type: String,
+        type: Schema.Types.ObjectId,
+        ref: 'Country',
         required: false
     },
     hasVariant: {

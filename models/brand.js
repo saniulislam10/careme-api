@@ -6,23 +6,17 @@ const schema = new Schema({
         type: String,
         required: true
     },
-    slug: {
+    link: {
         type: String,
         required: false
     },
-    tags: {
+    logo: {
         type: String,
         required: false
     },
-    count: {
-        type: Number,
-        required: false
-    }
-
-
 }, {
     timestamps: true
 });
 
 
-module.exports = mongoose.model('Category', schema);
+module.exports = mongoose.model('Brand', schema);

@@ -2,9 +2,9 @@ const cors = require('cors');
 
 let whitelist;
 if (process.env.PRODUCTION_BUILD === 'true') {
-    whitelist = ['http://localhost:4200', 'http://localhost:8100', 'https://caremein.softlabit.com', 'https://www.caremein.softlabit.com'];
+    whitelist = ['http://localhost:4200', 'http://192.168.68.10:4200', 'http://localhost:8100', 'https://caremein.softlabit.com', 'https://www.caremein.softlabit.com'];
 } else {
-    whitelist = ['http://localhost:4200', 'http://localhost:8100', 'https://caremein.softlabit.com', 'https://www.caremein.softlabit.com'];
+    whitelist = ['http://localhost:4200', 'http://192.168.68.10:4200', 'http://localhost:8100', 'https://caremein.softlabit.com', 'https://www.caremein.softlabit.com'];
 }
 
 const corsOptions = {

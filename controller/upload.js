@@ -169,7 +169,7 @@ exports.uploaderImageMulti = (req, res, next) => {
         })
 
         res.status(200).json({
-            message: 'Success',
+            message: 'Image upload Successfully',
             downloadUrls: downloadUrls
         });
     }

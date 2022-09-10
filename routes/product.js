@@ -26,8 +26,6 @@ router.post('/get-all-archived-products', controller.getAllArchivedProducts);
 router.post('/get-products-by-dynamic-sort', controller.getProductsByDynamicSort);
 router.post('/get-products-by-search',controller.getProductsBySearch)
 router.post("/get-selected-product-details",controller.getSelectedProductDetails);
-router.post('/get-specific-products-by-cat-id',controller.getSpecificProductsBycatId)
-router.post('/get-specific-products-by-sub-cat-id',controller.getSpecificProductsBySubCatId)
 // add-by-link
 router.post('/get-add-by-link-products-by-dynamic-sort', controller.getAddByLinkProductsByDynamicSort);
 

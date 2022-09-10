@@ -8,6 +8,26 @@ const userSchema = new Schema(
             type: String,
             required: false
         },
+        age: {
+            type: Number,
+            required: false
+        },
+        zilla: {
+            type: String,
+            required: false
+        },
+        city: {
+            type: String,
+            required: false
+        },
+        thana: {
+            type: String,
+            required: false
+        },
+        zipcode: {
+            type: String,
+            required: false
+        },
         address: {
             type: String,
             required: false

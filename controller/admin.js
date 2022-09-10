@@ -45,14 +45,9 @@ exports.insertDefaultDocuments = async (req, res, next) => {
         const newBrand = new ProductBrand(brand);
         await newBrand.save();
 
-        // const newParentCategory = new ProductParentCategory(parentCategory);
-        // const resultParentCategory = await newParentCategory.save();
-
-        // category.parentCategory = resultParentCategory._id;
         const newCategory = new ProductCategory(category);
         const resultCategory = await newCategory.save();
 
-        // subCategory.parentCategory = resultParentCategory._id;
         subCategory.category = resultCategory._id;
         const newSubCategory = new ProductSubCategory(subCategory);
         await newSubCategory.save();

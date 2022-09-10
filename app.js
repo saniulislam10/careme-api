@@ -24,12 +24,16 @@
   *  Router File Import
   */
  const adminRoutes = require('./routes/admin');
+ const collectionRoutes = require('./routes/collection');
+ const productTypeRoutes = require('./routes/product-type');
+ const countryRoutes = require('./routes/country');
+ const vendorRoutes = require('./routes/vendor');
+ const brandRoutes = require('./routes/brand');
+ const supplierRoutes = require('./routes/supplier');
  const searchRoutes = require('./routes/search.js'); 
  const productRoutes = require('./routes/product');
  const adjustmentRoutes = require('./routes/adjustment');
  const purchaseRoutes = require('./routes/purchase');
- const categoryRoutes = require('./routes/product-category');
- const subCategoryRoutes = require('./routes/product-sub-category');
  const bulkSmsRoutes = require("./routes/bulk-sms");
  const userRoutes = require('./routes/user');
  const sizeChart = require('./routes/size-chart');
@@ -96,12 +100,16 @@ const cityRoutes = require('./routes/city');
   * MAIN BASE ROUTER WITH IMPORTED ROUTES
   */
  app.use('/api/admin', adminRoutes);
+ app.use('/api/product-type', productTypeRoutes);
+ app.use('/api/country', countryRoutes);
+ app.use('/api/brand', brandRoutes);
+ app.use('/api/collection', collectionRoutes);
+ app.use('/api/supplier', supplierRoutes);
+ app.use('/api/vendor', vendorRoutes);
  app.use('/api/search', searchRoutes);
  app.use('/api/product', productRoutes);
  app.use('/api/adjustment', adjustmentRoutes);
  app.use('/api/purchase', purchaseRoutes);
- app.use('/api/product-category', categoryRoutes);
- app.use('/api/product-sub-category', subCategoryRoutes);
  app.use('/api/bulk-sms', bulkSmsRoutes);
  app.use('/api/user', userRoutes);
  app.use('/api/size-chart', sizeChart);
