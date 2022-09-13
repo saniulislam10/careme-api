@@ -16,7 +16,8 @@ const schema = new Schema({
         required: false
     },
     supplier: {
-        type: String,
+        type: Schema.Types.ObjectId,
+        ref: 'Supplier',
         required: false
     },
     manufacturer: {
@@ -31,11 +32,44 @@ const schema = new Schema({
         type: String,
         required: false
     },
-    products: [],
-    purchaseShippingCharge: {
-        type: Number,
-        required: false
-    },
+    products: [{
+        productData : {
+            type: Object,
+            required: false
+        },
+        sku: {
+            type: String,
+            required: false
+        },
+        purchaseQuantity: {
+            type: Number,
+            required: false
+        },
+        sku: {
+            type: String,
+            required: false
+        },
+        purchasePrice: {
+            type: Number,
+            required: false
+        },
+        purchaseTax: {
+            type: Number,
+            required: false
+        },
+        amount: {
+            type: Number,
+            required: false
+        },
+        recieved: {
+            type: Number,
+            required: false
+        },
+        message: {
+            type: Number,
+            required: false
+        },
+    }],
     purchaseShippingCharge: {
         type: Number,
         required: false

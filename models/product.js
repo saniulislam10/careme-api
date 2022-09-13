@@ -177,11 +177,22 @@ const schema = new Schema({
     variantFormArray: [
         {
             variantVendorName: {
-                type: String,
+                type: Schema.Types.ObjectId,
+                ref: 'Admin',
                 required: false
             },
 
             variantQuantity: {
+                type: Number,
+                min: 0,
+                required: false
+            },
+            variantCostPrice: {
+                type: Number,
+                min: 0,
+                required: false
+            },
+            variantCommittedQuantity: {
                 type: Number,
                 min: 0,
                 required: false

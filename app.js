@@ -28,6 +28,7 @@
  const productTypeRoutes = require('./routes/product-type');
  const countryRoutes = require('./routes/country');
  const vendorRoutes = require('./routes/vendor');
+ const reviewRoutes = require('./routes/review');
  const brandRoutes = require('./routes/brand');
  const supplierRoutes = require('./routes/supplier');
  const searchRoutes = require('./routes/search.js'); 
@@ -102,6 +103,7 @@ const cityRoutes = require('./routes/city');
  app.use('/api/admin', adminRoutes);
  app.use('/api/product-type', productTypeRoutes);
  app.use('/api/country', countryRoutes);
+ app.use('/api/review', reviewRoutes);
  app.use('/api/brand', brandRoutes);
  app.use('/api/collection', collectionRoutes);
  app.use('/api/supplier', supplierRoutes);

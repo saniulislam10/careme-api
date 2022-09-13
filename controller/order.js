@@ -64,8 +64,21 @@ exports.placeOrder = async (req, res, next) => {
           }
         }
       ).exec();
+      
 
       if (orderedProductWithVarients.hasVariant === true) {
+        await Product.findOneAndUpdate(
+          { _id: orderitem.product },
+          {
+            $inc: {
+              "variantFormArray.$[e1].variantCommittedQuantity": orderitem.quantity,
+            },
+          },
+          {
+            arrayFilters: [{ "e1.variantSku": orderitem.sku }],
+          }
+        ).exec();
+
         varforQty = orderedProductWithVarients.variantFormArray.filter(
           function (el) {
             return el.variantSku === orderitem.sku;
@@ -226,12 +239,8 @@ exports.placeOrder = async (req, res, next) => {
             multi: true,
           }).exec();
         } else {
-          console.log("main", productData.quantity);
           newqty = q2.$inc ? -q2.$inc.quantity : 0;
-
-          console.log("sold", newqty);
           qty = productData.quantity - newqty;
-          console.log("update", qty);
           if (qty < 0) {
             await Product.updateOne(
               { _id: m._id },
@@ -457,7 +466,6 @@ exports.placeOrderForRequest = async (req, res, next) => {
         }
       );
     } else {
-      console.log("nothing");
       await User.findOneAndUpdate(
         { _id: userId },
         {
@@ -575,7 +583,6 @@ exports.getAllOrdersOfUserByAdmin = async (req, res, next) => {
     let pageSize = req.query.pageSize;
     let currentPage = req.query.page;
     let select = req.query.select;
-    console.log(req.query.userId);
     let queryData;
     queryData = Order.find({ user: userId });
 
@@ -752,7 +759,6 @@ exports.getAllOrdersByAdminV2 = async (req, res, next) => {
   try {
     let paginate = req.body.paginate;
     let filter = req.body.filter;
-    console.log(filter);
     let sort = req.body.sort;
     let select = req.body.select;
 
@@ -1031,7 +1037,7 @@ exports.getSingleOrderByUser = async (req, res, next) => {
 
 exports.getSingleOrderByAdmin = async (req, res, next) => {
   try {
-    const order = await Order.findById(req.params.orderId);
+    const order = await Order.findById(req.params.orderId).populate("orderedItems.vendor");
 
     res.json({
       success: true,
@@ -1133,8 +1139,6 @@ exports.getAllOrdersByAdminNoPaginate = async (req, res, next) => {
 exports.updateMultipleOrder = async (req, res, next) => {
   const data = req.body;
   try {
-    console.log(data[0]);
-    console.log(data[0]._id);
     data.forEach((m) => {
       Order.findByIdAndUpdate(
         m._id,
@@ -1552,7 +1556,6 @@ exports.testSslSmsApi = (req, res, next) => {
     })
     .catch(function (error) {
       console.log("error::");
-      // console.log(error);
       res.status(200).json({
         success: false,
       });
@@ -1671,13 +1674,7 @@ exports.getAllOrdersByAdmin = async (req, res, next) => {
         filter.deliveryStatus = filter.deliveryStatus;
       }
 
-      // if (filter.vendor && typeof filter.vendor === 'string') {
-      //   filter.vendor = filter.vendor
-      // }
-
       mFilter = { ...mFilter, ...filter };
-
-      // console.log(mFilter)
     }
 
     if (searchQuery) {
@@ -1761,8 +1758,6 @@ exports.getAllOrdersByAdmin = async (req, res, next) => {
       });
     }
 
-    console.log(filter);
-
     const dataAggregates = await Order.aggregate(aggregateStages);
 
     if (pagination) {
@@ -1800,13 +1795,8 @@ exports.updateProductQuantityByOrderId = async (req, res, next) => {
 
     order.orderedItems.forEach(async (item) => {
       try {
-        ///console.log("---------------------item.status",item.status)
 
         if (item.status == 1) {
-          ///console.log("_--------------------------------------------------",item.orderType)
-
-          // if (item.orderType == "regular") {
-
           var varData;
           const data = await Product.findOne({
             _id: item.product._id,
@@ -1818,8 +1808,6 @@ exports.updateProductQuantityByOrderId = async (req, res, next) => {
               varData = data.variantFormArray[index];
             }
           });
-
-          //const qt = (varData.variantQuantity - item.quantity) >0 ? (varData.variantQuantity - item.quantity) : 0
 
           await Product.findOneAndUpdate(
             { _id: item.product._id },
@@ -1842,13 +1830,11 @@ exports.updateProductQuantityByOrderId = async (req, res, next) => {
           ).exec();
           // }
         } else if (item.status == 0) {
-          console.log(item.oldQuantity);
           const qt =
             item.quantity - item.oldQuantity > 0
               ? item.quantity - item.oldQuantity
               : -(item.quantity - item.oldQuantity);
 
-          console.log("------------------QT", qt);
 
           await Product.findOneAndUpdate(
             { _id: item.product._id },

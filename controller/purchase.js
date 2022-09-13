@@ -17,11 +17,11 @@ exports.addSingle = async (req, res, next) => {
       ...purchaseData,
       ...{ purchaseId: purchaseIdUnique },
     };
-      const purchase = new Model(finalData);
-      await purchase.save();
-      res.status(200).json({
-        message: "Data Added Successfully!",
-      });
+    const purchase = new Model(finalData);
+    await purchase.save();
+    res.status(200).json({
+      message: "Data Added Successfully!",
+    });
   } catch (err) {
     console.log(err);
     if (!err.statusCode) {
@@ -37,7 +37,7 @@ exports.getById = async (req, res, next) => {
 
   try {
     const query = { _id: id };
-    const data = await Model.findOne(query);
+    const data = await Model.findOne(query).populate('supplier');
 
     res.status(200).json({
       data: data,
@@ -57,7 +57,7 @@ exports.deleteById = async (req, res, next) => {
   const id = req.params.id;
   try {
     const query = { _id: id };
-    
+
     await Model.deleteOne(query);
     res.status(200).json({
       message: "Data deleted Successfully!",
@@ -81,9 +81,9 @@ exports.getAll = async (req, res, next) => {
     let dataCount;
 
     if (filter) {
-      queryData = Model.find(filter);
+      queryData = Model.find(filter).populate('supplier');
     } else {
-      queryData = Model.find();
+      queryData = Model.find().populate('supplier');
     }
 
     if (paginate) {
@@ -134,26 +134,41 @@ exports.updateById = async (req, res, next) => {
 };
 exports.updateRecieved = async (req, res, next) => {
   const data = req.body;
+  console.log(data);
   try {
     let purchaseData = await Model.findOne({ _id: data._id });
-    purchaseData.products[data.index].recieved = data.recieved;
+    purchaseData.products[data.index].recieved += data.recieved;
     purchaseData.products[data.index].message = data.message;
+
+    console.log(purchaseData.products[data.index].sku);
     await Model.findOneAndUpdate({ _id: data._id }, { $set: purchaseData });
-    for(let i=0; i< purchaseData.products.length; i++){
-      let id = purchaseData.products[i].productData._id;
-      let recieved = purchaseData.products[i].recieved;
-      let purchaseCost = purchaseData.products[i].purchasePrice;
-      let purchaseTax = purchaseData.products[i].purchaseTax;
+    let id = data.productId;
+    let recieved = data.recieved;
+    let sku = purchaseData.products[data.index].sku;
+
+    await Product.findOneAndUpdate(
+      { _id: id },
+      {
+        $inc: {
+          quantity: recieved,
+        }
+      }
+    ).exec();
+
+    if (purchaseData.products[data.index].productData.hasVariant) {
       await Product.findOneAndUpdate(
         { _id: id },
         {
           $inc: {
-            quantity: recieved,
+            "variantFormArray.$[e1].variantQuantity": recieved,
           },
-          $set: {
-            costPrice: purchaseCost,
-            purchaseTax: purchaseTax,
-          },
+        },
+        {
+          arrayFilters: [
+            {
+              "e1.variantSku": sku,
+            },
+          ],
         }
       ).exec();
     }
@@ -173,6 +188,6 @@ exports.updateRecieved = async (req, res, next) => {
 /**
  * ADDITIONAL FUNCTIONS
  */
- function padLeadingZeros(num) {
+function padLeadingZeros(num) {
   return String(num).padStart(4, "0");
 }

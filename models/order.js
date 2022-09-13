@@ -233,7 +233,8 @@ const schema = new Schema(
           required: false,
         },
         vendor: {
-          type: String,
+          type: Schema.Types.ObjectId,
+          ref: "Admin",
           required: false,
         },
         deliveryDateFrom: {

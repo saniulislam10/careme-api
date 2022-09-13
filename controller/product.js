@@ -43,13 +43,11 @@ exports.getSingleProductById = async (req, res, next) => {
 
   try {
     const query = { _id: id };
-    const data = await Product.findOne(query).populate('productType');
-
-    console.log(data);
-    // .populate('attributes')
-    // .populate('brand')
-    // .populate('category')
-    // .populate('subCategory');
+    const data = await Product.findOne(query)
+    .populate('productType')
+    .populate("brand")
+    .populate("vendor")
+    .populate("variantFormArray.variantVendorName");
 
     res.status(200).json({
       data: data,
@@ -69,11 +67,14 @@ exports.getSingleProductBySlug = async (req, res, next) => {
 
   try {
     const query = { slug: slug };
-    const data = await Product.findOne(query);
+    const data = await Product.findOne(query)
+    .populate('productType')
+    .populate("vendor")
+    .populate('brand')
+    .populate("variantFormArray.variantVendorName")
 
     console.log(data);
     // .populate('attributes')
-    // .populate('brand')
     // .populate('category')
     // .populate('subCategory');
 
@@ -156,7 +157,11 @@ exports.getAllProducts = async (req, res, next) => {
         .limit(Number(paginate.pageSize));
     }
 
-    const data = await queryData.sort({ createdAt: -1 });
+    const data = await queryData
+    .populate("brand")
+    .populate("vendor")
+    .populate("variantFormArray.variantVendorName")
+    .sort({ createdAt: -1 });
 
     if (filter) {
       dataCount = await Product.countDocuments(filter);
@@ -248,9 +253,11 @@ exports.getAllArchivedProducts = async (req, res, next) => {
     }
 
     const data = await queryData
-      .populate("parentCategory")
+    .populate('productType')
+    .populate("vendor")
+    .populate('brand')
+    .populate("variantFormArray.variantVendorName")
       // .populate('attributes')
-      // .populate('brand')
       // .populate('category')
       // .populate('subCategory')
       // .populate('tags')
@@ -313,8 +320,10 @@ exports.getProductsByDynamicSort = async (req, res, next) => {
       queryDoc.select(select);
     }
 
-    const data = await queryDoc.populate("vendor");
-
+    const data = await queryDoc
+    .populate("brand")
+    .populate("vendor")
+    .populate("variantFormArray.variantVendorName")
     const count = await Product.countDocuments({ hasLink: false });
 
     res.status(200).json({
@@ -368,8 +377,10 @@ exports.getAddByLinkProductsByDynamicSort = async (req, res, next) => {
 
     const data = await queryDoc
       // .populate('attributes')
-      // .populate('brand')
-      .populate("parentCategory")
+      .populate('brand')
+      .populate('productType')
+    .populate("vendor")
+    .populate("variantFormArray.variantVendorName")
       .sort({ createdAt: -1 });
     // .populate('subCategory')
     // .populate('tags');
@@ -440,7 +451,7 @@ exports.getProductsBySearch = async (req, res, next) => {
             $or: [
               { $and: queryArray },
               { $and: queryArray2 },
-              {$and: queryArray3},
+              { $and: queryArray3 },
               // {$and: queryArray4},
             ],
           },
@@ -468,7 +479,7 @@ exports.getProductsBySearch = async (req, res, next) => {
           {$and: queryArray3},
           // {$and: queryArray4},
         ],
-      });
+      })
 
       countDoc = Product.countDocuments({
         $or: [
@@ -486,7 +497,11 @@ exports.getProductsBySearch = async (req, res, next) => {
       dataDoc.skip(pageSize * (currentPage - 1)).limit(Number(pageSize));
     }
 
-    const results = await dataDoc.populate("parentCategory");
+    const results = await dataDoc
+    .populate('productType')
+    .populate("brand")
+    .populate("vendor")
+    .populate("variantFormArray.variantVendorName");
     const count = await countDoc;
     
     res.status(200).json({
@@ -581,7 +596,11 @@ exports.getProductsBySearchAdmin = async (req, res, next) => {
       dataDoc.skip(pageSize * (currentPage - 1)).limit(Number(pageSize));
     }
 
-    const results = await dataDoc;
+    const results = await dataDoc
+    .populate("brand")
+    .populate('productType')
+    .populate("vendor")
+    .populate("variantFormArray.variantVendorName");
     const count = await countDoc;
     
     res.status(200).json({
@@ -671,7 +690,11 @@ exports.getSelectedProductDetails = async (req, res, next) => {
   try {
     const selectedIds = req.body.selectedIds;
 
-    const data = await Product.find({ _id: { $in: selectedIds } });
+    const data = await Product.find({ _id: { $in: selectedIds } })
+    .populate('productType')
+    .populate("brand")
+    .populate("vendor")
+    .populate("variantFormArray.variantVendorName");
 
     res.status(200).json({
       data: data,

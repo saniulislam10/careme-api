@@ -104,7 +104,6 @@ exports.editVariantInCart = async (req, res, next) => {
 
 exports.getCartItemByUserId = async (req, res, next) => {
   const userId = req.userData.userId;
-  console.log("cart get | user id : ", userId);
 
   try {
     const data = await User.findOne({ _id: userId })
