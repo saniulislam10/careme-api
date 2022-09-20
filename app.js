@@ -49,6 +49,7 @@
  const galleryRoutes = require('./routes/gallery');
 const imageFolderRoutes = require('./routes/image-folder');
 const conversionRateRoutes = require('./routes/conversion-rate');
+const deliveryAgentsRoutes = require('./routes/delivery-agents');
 
 // Payment SSL
 const paymentSSLRoutes = require("./routes/payment-ssl");
@@ -126,6 +127,7 @@ const cityRoutes = require('./routes/city');
  app.use('/api/gallery', galleryRoutes);
 app.use('/api/image-folder', imageFolderRoutes);
 app.use("/api/conversion-rate", conversionRateRoutes);
+app.use("/api/delivery-agents", deliveryAgentsRoutes);
 
 //ssl
 app.use('/api/payment-ssl', paymentSSLRoutes);

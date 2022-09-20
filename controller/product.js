@@ -646,7 +646,6 @@ exports.updateMultipleProductById = async (req, res, next) => {
 
 exports.updateProductQuantityById = async (req, res, next) => {
   const data = req.body;
-
   try {
     const tempProduct = await Product.findOne({'_id': data.product._id})
 
@@ -657,6 +656,7 @@ exports.updateProductQuantityById = async (req, res, next) => {
     })[0]
 
     console.log("this is v",variantData)
+    console.log("this is v",data.tempQuantity)
     
     if(variantData.variantQuantity<=0 && data.tempQuantity<0 ){
       data.tempQuantity=0
