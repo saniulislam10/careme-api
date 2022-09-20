@@ -45,8 +45,6 @@ exports.getSingleProductById = async (req, res, next) => {
     const query = { _id: id };
     const data = await Product.findOne(query)
     .populate('productType')
-    .populate("brand")
-    .populate("vendor")
     .populate("variantFormArray.variantVendorName");
 
     res.status(200).json({
@@ -158,6 +156,11 @@ exports.getAllProducts = async (req, res, next) => {
     }
 
     const data = await queryData
+    .populate(
+      {
+        path : "productType"
+      }
+    )
     .populate("brand")
     .populate("vendor")
     .populate("variantFormArray.variantVendorName")
@@ -422,8 +425,7 @@ exports.updateProductById = async (req, res, next) => {
 exports.getProductsBySearch = async (req, res, next) => {
   try {
     // Query Text
-    const search = req.query.q;
-    console.log(search);
+    let search = req.query.q;
 
     // Additional Filter
     const filter = req.body.filter;
@@ -437,7 +439,7 @@ exports.getProductsBySearch = async (req, res, next) => {
     const queryArray = newQuery.map((str) => ({ name: RegExp(str, "i") }));
     const queryArray2 = newQuery.map((str) => ({ sku: RegExp(str, "i") }));
     const queryArray3 = newQuery.map((str) => ({link: RegExp(str, 'i')}));
-    // const queryArray4 = newQuery.map((str) => ({username: RegExp(str, 'i')}));
+    const queryArray4 = newQuery.map((str) => ({variantFormArray: { $elemMatch: { variantSku: str }}}));
     // const regex = new RegExp(query, 'i')
 
     let dataDoc;
@@ -452,7 +454,7 @@ exports.getProductsBySearch = async (req, res, next) => {
               { $and: queryArray },
               { $and: queryArray2 },
               { $and: queryArray3 },
-              // {$and: queryArray4},
+              { $and: queryArray4 },
             ],
           },
         ],
@@ -466,7 +468,7 @@ exports.getProductsBySearch = async (req, res, next) => {
               { $and: queryArray },
               { $and: queryArray2 },
               {$and: queryArray3},
-              // {$and: queryArray4},
+              {$and: queryArray4},
             ],
           },
         ],
@@ -486,7 +488,7 @@ exports.getProductsBySearch = async (req, res, next) => {
           { $and: queryArray },
           { $and: queryArray2 },
           {$and: queryArray3},
-          // {$and: queryArray4},
+          {$and: queryArray4},
         ],
       });
     }
@@ -501,7 +503,8 @@ exports.getProductsBySearch = async (req, res, next) => {
     .populate('productType')
     .populate("brand")
     .populate("vendor")
-    .populate("variantFormArray.variantVendorName");
+    .populate("variantFormArray.variantVendorName")
+    
     const count = await countDoc;
     
     res.status(200).json({

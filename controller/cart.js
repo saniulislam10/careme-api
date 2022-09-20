@@ -116,8 +116,7 @@ exports.getCartItemByUserId = async (req, res, next) => {
         },
       })
       .select("carts");
-  
-      console.log(data);
+
     res.status(200).json({
       data: data && data.carts ? data.carts : [],
       message: "All Products Fetched Successfully!",

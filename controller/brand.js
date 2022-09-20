@@ -113,4 +113,23 @@ exports.editById = async (req, res, next) => {
         next(err);
     }
 };
+exports.deleteById = async (req, res, next) => {
+    try {
+
+        let id = req.params.id;
+        console.log(id);
+        await Brand.deleteOne({_id: id});
+
+        res.status(200).json({
+            message: "Brand deleted successfully",
+        });
+    } catch (err) {
+        console.log(err);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+            err.message = "Something went wrong on database operation!";
+        }
+        next(err);
+    }
+};
 

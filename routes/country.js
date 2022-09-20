@@ -21,6 +21,7 @@ router.post('/add', checkAdminAuth, controller.add);
 router.get('/get-all', checkAdminAuth, controller.getAll);
 router.put('/edit-by-id', controller.editById);
 router.post('/get-filtered-data', controller.getFilteredData);
+router.delete('/delete-by-id/:id', checkAdminAuth, controller.deleteById);
 
 
 // Export All router..

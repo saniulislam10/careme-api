@@ -50,6 +50,7 @@ exports.getAllInvoicesByOrderNo = async (req, res, next) => {
   try {
     
     const orderNo = req.body.data;
+    console.log(orderNo);
     const data = await Invoice.find({orderNumber: orderNo});
 
     res.json({

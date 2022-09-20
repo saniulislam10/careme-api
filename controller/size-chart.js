@@ -116,7 +116,7 @@ exports.getSizeChartByParentId = async (req, res, next) => {
     try {
         const parentId = req.params.id;
 
-        const data = await SizeChart.find({ parentCategory : parentId });
+        const data = await SizeChart.find();
 
         res.status(200).json({
             data: data,
@@ -140,14 +140,7 @@ exports.getSizeChartByCategoryAndSubCategoryId = async (req, res, next) => {
 
         let datas = [];
         for(let i=0; i<childIds.length; i++){
-            let data = await Product.find({
-                $and: [
-                    { parentCategory: parentId },
-                    {
-                        childCategory: childIds[i]
-                    },
-                ],
-            });
+            let data = await Product.find();
             for(let x=0; x<data.length; x++){
                 datas.push(data[x]);
             }

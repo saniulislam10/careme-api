@@ -1650,115 +1650,12 @@ exports.getAllOrdersByAdmin = async (req, res, next) => {
     const { select } = req.body;
     const searchQuery = req.query.q;
 
-    // Essential Variables
-    const aggregateStages = [];
-    let mFilter = {};
-    let mSort = {};
-    let mSelect = {};
-    let mPagination = {};
-
-    // Match
-    if (filter) {
-      if (filter.user && typeof filter.user === "string") {
-        filter.user = new ObjectId(filter.user);
-      }
-      if (filter.createdAt && typeof filter.createdAt === "object") {
-        filter.createdAt["$gte"] = new Date(filter.createdAt["$gte"]);
-        filter.createdAt["$lte"] = new Date(filter.createdAt["$lte"]);
-      }
-      if (filter.paymentStatus && typeof filter.paymentStatus === "number") {
-        filter.paymentStatus = filter.paymentStatus;
-      }
-
-      if (filter.deliveryStatus && typeof filter.deliveryStatus === "number") {
-        filter.deliveryStatus = filter.deliveryStatus;
-      }
-
-      mFilter = { ...mFilter, ...filter };
-    }
-
-    if (searchQuery) {
-      mFilter = {
-        $and: [
-          mFilter,
-          {
-            $or: [
-              { orderId: { $regex: searchQuery, $options: "i" } },
-              // { phoneNo: { $regex: searchQuery, $options: 'i' } }
-            ],
-          },
-        ],
-      };
-    }
-
-    // Sort
-    if (sort) {
-      mSort = sort;
-    } else {
-      mSort = { createdAt: -1 };
-    }
-
-    // Select
-    if (select) {
-      mSelect = { ...select };
-    } else {
-      mSelect = { name: 0 };
-    }
-
-    // Finalize
-
-    if (Object.keys(mFilter).length) {
-      aggregateStages.push({ $match: mFilter });
-    }
-
-    if (Object.keys(mSort).length) {
-      aggregateStages.push({ $sort: mSort });
-    }
-
-    if (!pagination) {
-      aggregateStages.push({ $project: mSelect });
-    }
-
-    // Pagination
-    if (pagination) {
-      if (Object.keys(mSelect).length) {
-        mPagination = {
-          $facet: {
-            metadata: [{ $count: "total" }],
-            data: [
-              {
-                $skip: pagination.pageSize * pagination.currentPage,
-              } /* IF PAGE START FROM 0 OR (pagination.currentPage - 1) IF PAGE 1*/,
-              { $limit: pagination.pageSize },
-              { $project: mSelect },
-            ],
-          },
-        };
-      } else {
-        mPagination = {
-          $facet: {
-            metadata: [{ $count: "total" }],
-            data: [
-              {
-                $skip: pagination.pageSize * pagination.currentPage,
-              } /* IF PAGE START FROM 0 OR (pagination.currentPage - 1) IF PAGE 1*/,
-              { $limit: pagination.pageSize },
-            ],
-          },
-        };
-      }
-
-      aggregateStages.push(mPagination);
-
-      aggregateStages.push({
-        $project: {
-          data: 1,
-          count: { $arrayElemAt: ["$metadata.total", 0] },
-        },
-      });
-    }
-
-    const dataAggregates = await Order.aggregate(aggregateStages);
+    const dataAggregates = await Order.find({created : -1})
+    .populate({
+      path: 'user',
+      select: 'fullName phoneNo'
+    })
+    // .aggregate(aggregateStages)
 
     if (pagination) {
       res.status(200).json({
