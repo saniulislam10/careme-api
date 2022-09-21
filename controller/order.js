@@ -43,11 +43,12 @@ exports.placeOrder = async (req, res, next) => {
     error.data = errors.array();
     next(error);
     return;
-  }
+  } 
 
   try {
     const userId = req.userData.userId;
     const orderData = req.body;
+    console.log(orderData);
 
     // Update Product Data
 
@@ -430,6 +431,7 @@ exports.placeTempOrder = async (req, res, next) => {
 exports.placeOrderForRequest = async (req, res, next) => {
   try {
     const userId = req.userData.userId;
+    console.log(userId);
     // Increment Order Id Unique
     const incOrder = await UniqueId.findOneAndUpdate(
       {},

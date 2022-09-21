@@ -1,89 +1,167 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-exports.orderItem = new Schema(
+exports.orderedItems = new Schema(
     {
-        product: {
-            type: Schema.Types.ObjectId,
-            ref: 'Product',
-            required: true
+        productId: {
+            type: String,
+            required: false,
+        },
+        name: {
+            type: String,
+            required: false,
+        },
+        slug: {
+            type: String,
+            required: false,
         },
         price: {
             type: Number,
-            required: true
+            required: false,
         },
-        tax: {
-            type: Number,
-            required: false
+        image: {
+            type: String,
+            required: false,
         },
         sku: {
             type: String,
-            required: false
-        },
-        discountType: {
-            type: Number,
-            required: false
-        },
-        discountAmount: {
-            type: Number,
-            required: false
+            required: false,
         },
         quantity: {
             type: Number,
-            required: true
+            required: false,
+        },
+        tax: {
+            type: Number,
+            required: false,
+        },
+        vendorId: {
+            type: Schema.Types.ObjectId,
+            ref: "Admin",
+            required: false,
+        },
+        vendorName: {
+            type: String,
+            required: false,
+        },
+        brandId: {
+            type: Schema.Types.ObjectId,
+            ref: "Brand",
+            required: false,
+        },
+        brandName: {
+            type: String,
+            required: false,
+        },
+        productTypeId: {
+            type: String,
+            required: false,
+        },
+        productTypeName: {
+            type: String,
+            required: false,
         },
         orderType: {
             type: String,
-            required: true
+            required: false,
         },
-        status: {
+        variant: {
+            type: String,
+            required: false,
+        },
+        advanceType: {
+            type: String,
+            required: false,
+        },
+        advanceAmount: {
+            type: String,
+            required: false,
+        },
+        deliveryStatus: {
             type: Number,
-            required: true
-        }
+            required: false,
+        },
+        deliveryDateFrom: {
+            type: Date,
+            required: false,
+        },
+        deliveryDateTo: {
+            type: Date,
+            required: false,
+        },
+        paymentStatus: {
+            type: Number,
+            required: false,
+        },
+        paidAmount: {
+            type: Number,
+            required: false,
+        },
+        paymentMethod: {
+            type: String,
+            required: false,
+        },
+        shippingFee: {
+            type: Number,
+            required: false,
+        },
+        returnPeriod: {
+            type: Number,
+            required: false,
+        },
+        earnedAmount: {
+            type: Number,
+            required: false,
+        },
+        redeemedAmount: {
+            type: Number,
+            required: false,
+        },
+        
     },
     {
         _id: true
     }
 );
-exports.orderStatus=new Schema({
-    status:{
-        type:String,
-        required:true
+exports.orderStatus = new Schema({
+    status: {
+        type: String,
+        required: true
     },
-    adminInfo:{
-        type:String,
-        required:true
+    adminInfo: {
+        type: String,
+        required: true
     },
-    time:{
-        type:String,
-        required:true
+    time: {
+        type: String,
+        required: true
     },
-    dateTime:{
-        type:Date,
-        required:false
+    dateTime: {
+        type: Date,
+        required: false
     },
-    statusNote:{
-        type:String,
-        required:false
+    statusNote: {
+        type: String,
+        required: false
     },
-    sku:{
-        type:String,
-        required:false
+    sku: {
+        type: String,
+        required: false
     },
 
 })
 
 
 exports.tagStatus = new Schema({
-    tag:{
+    tag: {
         type: Schema.Types.ObjectId,
         ref: 'Tag',
         required: false
     },
-    activationdate:{
-        type:String,
-        required:true
+    activationdate: {
+        type: String,
+        required: true
     }
 },
-{
-    _id: true
-})
+    {
+        _id: true
+    })
