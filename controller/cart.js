@@ -109,11 +109,7 @@ exports.getCartItemByUserId = async (req, res, next) => {
     const data = await User.findOne({ _id: userId })
       .populate({
         path: "carts",
-        populate: {
-          path: "product",
-          select:
-            "name slug vendor sellingPrice tax sku medias images hasTax redeemPointsType redeemPoints earnPointsType earnPoints canEarnPoints canRedeemPoints partialPaymentType partialPayment canPartialPayment hasVariant variants options variantFormArray variantDataArray",
-        },
+        populate: ("product")
       })
       .select("carts");
 

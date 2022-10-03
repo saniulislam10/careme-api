@@ -34,6 +34,10 @@ const schema = new Schema({
             type: Number,
             required: false
         },
+        refundId: {
+            type: Number,
+            required: false
+        },
     },
     {
         timestamps: true,

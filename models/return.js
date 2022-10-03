@@ -14,13 +14,14 @@ const schema = new Schema(
         },
         returnDate: {
             type: Date,
-            required: false
+            required: true
+        },
+        invoiceId: {
+            type: Schema.Types.ObjectId,
+            ref: 'Invoice',
+            required: true
         },
         customerName: {
-            type: String,
-            required: false
-        },
-        billingAddress: {
             type: String,
             required: false
         },
@@ -44,9 +45,7 @@ const schema = new Schema(
             type: Number,
             required: false
         },
-        products: []
-
-  
+        products: []  
     },
     {
         timestamps: true

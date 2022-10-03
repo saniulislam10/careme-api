@@ -3,7 +3,8 @@ const Schema = mongoose.Schema;
 exports.orderedItems = new Schema(
     {
         productId: {
-            type: String,
+            type: Schema.Types.ObjectId,
+            ref: "Product",
             required: false,
         },
         name: {
@@ -27,6 +28,14 @@ exports.orderedItems = new Schema(
             required: false,
         },
         quantity: {
+            type: Number,
+            required: false,
+        },
+        invoicedQuantity: {
+            type: Number,
+            required: false,
+        },
+        returnedQuantity: {
             type: Number,
             required: false,
         },
@@ -69,11 +78,11 @@ exports.orderedItems = new Schema(
             required: false,
         },
         advanceType: {
-            type: String,
+            type: Number,
             required: false,
         },
         advanceAmount: {
-            type: String,
+            type: Number,
             required: false,
         },
         deliveryStatus: {

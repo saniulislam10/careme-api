@@ -175,6 +175,6 @@ exports.updateRecieved = async (req, res, next) => {
  * ADDITIONAL FUNCTIONS
  */
  function padLeadingZeros(num) {
-  return String(num).padStart(4, "0");
+  return 'AD' + String(num).padStart(4, "0");
 }
 

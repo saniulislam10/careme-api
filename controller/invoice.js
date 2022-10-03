@@ -1,6 +1,7 @@
 const { validationResult } = require("express-validator");
 const UniqueId = require("../models/unique-id");
 const Invoice = require("../models/invoice");
+const Order = require("../models/order");
 
 exports.addInvoice = async (req, res, next) => {
 
@@ -28,6 +29,29 @@ exports.addInvoice = async (req, res, next) => {
     const finalData = { ...req.body, ...{ invoiceId: invoiceIdUnique } };
     const invoice = new Invoice(finalData);
     const invoiceSave = await invoice.save();
+
+    console.log(finalData);
+    
+    const orderData = await Order.find({ orderId: finalData.orderNumber});
+    console.log(orderData);
+    console.log(orderData[0].orderedItems);
+
+    for(let i=0; i<finalData.products.length; i++){
+      await Order.findOneAndUpdate(
+        { orderId: finalData.orderNumber },
+        {
+          $inc : {
+            "orderedItems.$[e1].invoicedQuantity": finalData.products[i].quantity,
+          }
+        },
+        {
+          arrayFilters: [
+            { "e1.sku": finalData.products[i].sku },
+          ],
+        }
+      );
+    }
+    
 
     res.json({
       _id: invoiceSave._id,
@@ -93,6 +117,7 @@ exports.getAllInvoices = async (req, res, next) => {
       queryDoc = queryDoc.sort(sort);
     }
 
+    console.log(paginate);
     // Pagination
     if (paginate) {
       queryDoc
@@ -104,21 +129,13 @@ exports.getAllInvoices = async (req, res, next) => {
       queryDoc.select(select);
     }
 
-    const data = await queryDoc
-    // .populate({
-    //   path: "user",
-    //   select: "fullName tag",
-    //   populate: {
-    //     path: "tag",
-    //     select: "name images",
-    //   },
-    // });
+    const data = await queryDoc;
 
     const count = await countDoc;
-
     res.status(200).json({
       data: data,
-      count: count,Invoice});
+      count: count
+    });
   } catch (err) {
     console.log(err);
     if (!err.statusCode) {
@@ -135,7 +152,7 @@ exports.getAllInvoices = async (req, res, next) => {
         
     const id = req.params.id;
       const data = await Invoice.findOne({_id: id});
-  
+      
       res.json({
         data: data,
         success: true,
@@ -156,5 +173,5 @@ exports.getAllInvoices = async (req, res, next) => {
  * ADDITIONAL FUNCTIONS
  */
 function padLeadingZeros(num) {
-  return String(num).padStart(4, "0");
+  return 'INV'+String(num).padStart(4, "0");
 }

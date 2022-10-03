@@ -6,6 +6,7 @@ const UniqueId = require("../models/unique-id");
 
 const Return = require("../models/return");
 const User = require("../models/user");
+const Order = require("../models/order");
 
 exports.addReturn = async (req, res, next) => {
   const errors = validationResult(req);
@@ -26,28 +27,43 @@ exports.addReturn = async (req, res, next) => {
       { $inc: { returnId: 1 } },
       { new: true, upsert: true }
     );
-    
+
     const data = req.body;
-    console.log("---- Return Data ----");
-    console.log(data);
-    console.log("---- Return Data ----");
     const returnIdUnique = padLeadingZeros(incReturn.returnId);
     const finalData = { ...data, ...{ returnId: returnIdUnique } };
     const returnObj = new Return(finalData);
     const returnSave = await returnObj.save();
 
     let returnQuantity = 0;
-    for(let i=0; i<data.products.length; i++){
+    for (let i = 0; i < data.products.length; i++) {
       let myString = data.products[i].quantity
       let myNum = parseInt(myString);
       returnQuantity += myNum;
     }
 
-    await User.findOneAndUpdate(
-      {_id: data.billingAddress.user},
-      { $inc: { totalReturnAmount: data.total , totalReturn: returnQuantity } },
-    );
+    if (data.user) {
+      await User.findOneAndUpdate(
+        { _id: data.billingAddress.user },
+        { $inc: { totalReturnAmount: data.total, totalReturn: returnQuantity } },
+      );
+    }
     // totalReturnAmount
+
+    for(let i=0; i<finalData.products.length; i++){
+      await Order.findOneAndUpdate(
+        { orderId: finalData.orderNumber },
+        {
+          $inc : {
+            "orderedItems.$[e1].returnedQuantity": finalData.products[i].quantity,
+          }
+        },
+        {
+          arrayFilters: [
+            { "e1.sku": finalData.products[i].sku },
+          ],
+        }
+      );
+    }
 
     res.status(200).json({
       _id: returnSave._id,
@@ -68,10 +84,10 @@ exports.addReturn = async (req, res, next) => {
 exports.getAllReturnsByOrderNo = async (req, res, next) => {
 
   try {
-    
+
     const orderNo = req.body.data;
 
-    const data = await Return.find({orderNumber: orderNo});
+    const data = await Return.find({ orderNumber: orderNo });
 
     res.json({
       data: data,
@@ -90,51 +106,51 @@ exports.getAllReturnsByOrderNo = async (req, res, next) => {
 
 exports.getAllReturns = async (req, res, next) => {
 
-    try {
-  
-      const data = await Return.find();
-  
-      res.json({
-        data: data,
-        success: true,
-        message: "All Return fetched successfully",
-      });
-    } catch (err) {
-      console.log(err);
-      if (!err.statusCode) {
-        err.statusCode = 500;
-        err.message = "Something went wrong on database operation!";
-      }
-      next(err);
+  try {
+
+    const data = await Return.find().sort({createdAt : -1});
+
+    res.json({
+      data: data,
+      success: true,
+      message: "All Return fetched successfully",
+    });
+  } catch (err) {
+    console.log(err);
+    if (!err.statusCode) {
+      err.statusCode = 500;
+      err.message = "Something went wrong on database operation!";
     }
-  };
+    next(err);
+  }
+};
 
-  exports.getReturnById = async (req, res, next) => {
+exports.getReturnById = async (req, res, next) => {
 
-    try {
-        
+  try {
+
     const id = req.params.id;
-      const data = await Return.findOne({_id: id});
-  
-      res.json({
-        data: data,
-        success: true,
-        message: "Return fetched successfully",
-      });
-    } catch (err) {
-      console.log(err);
-      if (!err.statusCode) {
-        err.statusCode = 500;
-        err.message = "Something went wrong on database operation!";
-      }
-      next(err);
+    const data = await Return.findOne({ _id: id });
+
+    res.json({
+      data: data,
+      success: true,
+      message: "Return fetched successfully",
+    });
+  } catch (err) {
+    console.log(err);
+    if (!err.statusCode) {
+      err.statusCode = 500;   
+      err.message = "Something went wrong on database operation!";
     }
-  };
+    next(err);
+  }
+};
 
 
 /**
  * ADDITIONAL FUNCTIONS
  */
 function padLeadingZeros(num) {
-  return String(num).padStart(4, "0");
+  return 'RTO'+String(num).padStart(4, "0");
 }

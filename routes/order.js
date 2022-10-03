@@ -17,11 +17,6 @@ const router = express.Router();
  * Request Order
  */
 
-router.post('/place-order-request', checkAuth, controller.placeOrderForRequest);
-router.get('/get-request-order-details/:id', controller.getRequestOrderDetailsById);
-router.post('/get-all-request-orders-by-admin',checkIpWhitelist, checkAdminAuth, controller.getAllRequestOrdersByAdmin);
-router.put('/update-request-order-by-id', controller.updateRequestOrderById);
-
 /**
  * Regular Order
  */

@@ -32,6 +32,257 @@ exports.editOrder = async (req, res, next) => {
   }
 };
 
+// exports.placeOrder = async (req, res, next) => {
+//   const errors = validationResult(req);
+
+//   if (!errors.isEmpty()) {
+//     const error = new Error(
+//       "Input Validation Error! Please complete required information."
+//     );
+//     error.statusCode = 422;
+//     error.data = errors.array();
+//     next(error);
+//     return;
+//   } 
+
+//   try {
+//     const userId = req.userData.userId;
+//     const orderData = req.body;
+//     console.log(orderData);
+
+//     // Update Product Data
+
+//     for (let i = 0; i < orderData.orderedItems.length; i++) {
+//       const orderitem = orderData.orderedItems[i];
+//       const orderedProductWithVarients = await Product.findOne({
+//         _id: orderitem.productId,
+//       });
+//       await Product.findOneAndUpdate(
+//         { _id: orderitem.product },
+//         {
+//           $inc: {
+//             committedQuantity: orderitem.quantity,
+//           }
+//         }
+//       ).exec();
+
+//       console.log(orderedProductWithVarients);
+
+
+//       if (orderedProductWithVarients.hasVariant === true) {
+//         await Product.findOneAndUpdate(
+//           { _id: orderitem.productId },
+//           {
+//             $inc: {
+//               "variantFormArray.$[e1].variantCommittedQuantity": orderitem.quantity,
+//             },
+//           },
+//           {
+//             arrayFilters: [{ "e1.variantSku": orderitem.sku }],
+//           }
+//         ).exec();
+
+//         varforQty = orderedProductWithVarients.variantFormArray.filter(
+//           function (el) {
+//             return el.variantSku === orderitem.sku;
+//           }
+//         );
+
+//         let qty = varforQty[0].variantQuantity - orderitem.quantity;
+//         let reOrderQty = varforQty[0].variantReOrder;
+//         if (qty <= reOrderQty && qty > 0) {
+//           await Product.findOneAndUpdate(
+//             { _id: orderitem.productId },
+//             { isReOrder: true }
+//           );
+//         }
+//         if (qty <= 0) {
+//           await Product.findOneAndUpdate(
+//             { _id: orderitem.productId },
+//             { isStockOut: true }
+//           );
+//           await Product.findOneAndUpdate(
+//             { _id: orderitem.productId },
+//             {
+//               $set: {
+//                 "variantFormArray.$[e1].variantQuantity": 0,
+//               },
+//             },
+//             {
+//               arrayFilters: [{ "e1.variantSku": orderitem.sku }],
+//             }
+//           ).exec();
+//         } else {
+//           await Product.findOneAndUpdate(
+//             { _id: orderitem.productId },
+//             {
+//               $inc: {
+//                 "variantFormArray.$[e1].variantQuantity": -orderitem.quantity,
+//               },
+//             },
+//             {
+//               arrayFilters: [{ "e1.variantSku": orderitem.sku }],
+//             }
+//           ).exec();
+//         }
+//       } else {
+
+//         let qty = orderedProductWithVarients.quantity - orderitem.quantity;
+//         let reOrderQty = orderedProductWithVarients.reOrder - orderitem.quantity;
+//         if (qty <= reOrderQty && qty > 0) {
+//           await Product.findOneAndUpdate(
+//             { _id: orderitem.product },
+//             { isReOrder: true },
+//           );
+//         }
+//         if (qty <= 0) {
+//           await Product.findOneAndUpdate(
+//             { _id: orderitem.product },
+//             { isStockOut: true },
+//           );
+//         }
+//       }
+//     }
+
+//     // Increment Order Id Unique
+//     const incOrder = await UniqueId.findOneAndUpdate(
+//       {},
+//       { $inc: { orderId: 1 } },
+//       { new: true, upsert: true }
+//     );
+//     const orderIdUnique = padLeadingZeros(incOrder.orderId);
+//     const finalData = {
+//       ...req.body,
+//       ...{ user: userId, orderId: orderIdUnique },
+//     };
+//     const order = new Order(finalData);
+//     const orderSave = await order.save();
+
+//     if (req.body.couponId) {
+//       await Coupon.findByIdAndUpdate(
+//         { _id: req.body.couponId },
+//         { $push: { couponUsedByUser: userId } }
+//       );
+//     }
+//     // UPDATE USER CARTS & CHECKOUT
+//     if (orderData.redeemAmount > 0) {
+//       await User.findOneAndUpdate(
+//         { _id: userId },
+//         {
+//           $set: { carts: [] },
+//           $push: { checkouts: orderSave._id, usedCoupons: req.body.couponId },
+//           $inc: {
+//             redeemedPoints: orderData.redeemAmount,
+//             points: -orderData.redeemAmount,
+//           },
+//         }
+//       );
+//     } else if (orderData.earnAmount > 0) {
+//       await User.findOneAndUpdate(
+//         { _id: userId },
+//         {
+//           $set: { carts: [] },
+//           $push: { checkouts: orderSave._id, usedCoupons: req.body.couponId },
+//           $inc: {
+//             points: orderData.earnAmount,
+//             earnedPoints: orderData.earnAmount,
+//           },
+//         }
+//       );
+//     } else {
+//       await User.findOneAndUpdate(
+//         { _id: userId },
+//         {
+//           $set: { carts: [] },
+//           $push: { checkouts: orderSave._id, usedCoupons: req.body.couponId },
+//         }
+//       );
+//     }
+
+//     await Cart.deleteMany({ user: new ObjectId(userId) });
+
+//     // Update Quantity
+//     const orderDB = await Order.findOne({ _id: orderSave._id }).populate({
+//       path: "orderedItems.productId",
+//       model: "Product",
+//       select: "soldQuantity quantity",
+//     });
+
+//     if (orderDB && orderDB.orderedItems.length) {
+//       const mOrderProducts = orderDB.orderedItems.map((m) => {
+//         return {
+//           _id: m.productId,
+//           soldQuantity: m.quantity,
+//           productSoldQty: m.product.soldQuantity,
+//           productQty: m.product.quantity,
+//         };
+//       });
+//       mOrderProducts.forEach(async (m) => {
+//         // Create Complex Query
+//         const q1 = incrementSoldQuantityQuery(m);
+//         const q2 = decrementQuantityQuery(m);
+//         let finalQuery;
+//         if (q1.$inc && q2.$inc) {
+//           finalQuery = {
+//             $inc: {
+//               soldQuantity: q1.$inc.soldQuantity,
+//               quantity: q2.$inc.quantity,
+//             },
+//           };
+//         } else {
+//           finalQuery = { ...q1, ...q2 };
+//         }
+
+//         const productData = await Product.findOne({ _id: m._id });
+
+//         if (productData.isPreOrder !== true) {
+//           Product.updateOne({ _id: m._id }, finalQuery, {
+//             new: true,
+//             upsert: true,
+//             multi: true,
+//           }).exec();
+//         } else {
+//           newqty = q2.$inc ? -q2.$inc.quantity : 0;
+//           qty = productData.quantity - newqty;
+//           if (qty < 0) {
+//             await Product.updateOne(
+//               { _id: m._id },
+//               {
+//                 $set: {
+//                   quantity: 0,
+//                 },
+//               }
+//             ).exec();
+//           } else {
+//             await Product.updateOne(
+//               { _id: m._id },
+//               {
+//                 $inc: {
+//                   quantity: -newqty,
+//                 },
+//               }
+//             ).exec();
+//           }
+//         }
+//       });
+//     }
+
+//     res.json({
+//       _id: orderSave._id,
+//       orderId: orderIdUnique,
+//       success: true,
+//       message: "Order Placed successfully",
+//     });
+//   } catch (err) {
+//     console.log(err);
+//     if (!err.statusCode) {
+//       err.statusCode = 500;
+//       err.message = "Something went wrong on database operation!";
+//     }
+//     next(err);
+//   }
+// };
+
 exports.placeOrder = async (req, res, next) => {
   const errors = validationResult(req);
 
@@ -43,102 +294,64 @@ exports.placeOrder = async (req, res, next) => {
     error.data = errors.array();
     next(error);
     return;
-  } 
+  }
 
   try {
     const userId = req.userData.userId;
     const orderData = req.body;
-    console.log(orderData);
 
     // Update Product Data
 
     for (let i = 0; i < orderData.orderedItems.length; i++) {
       const orderitem = orderData.orderedItems[i];
       const orderedProductWithVarients = await Product.findOne({
-        _id: orderitem.product,
+        _id: orderitem.productId,
       });
+
+      let orderedQty = orderitem.quantity;
+      let currentQty = orderedProductWithVarients.quantity;
+      let newQty = currentQty - orderedQty;
+      // if (newQty <= 0) {
+      //   newQty = 0;
+      // }
       await Product.findOneAndUpdate(
-        { _id: orderitem.product },
+        { _id: orderitem.productId },
         {
           $inc: {
             committedQuantity: orderitem.quantity,
+          },
+          $set: {
+            quantity: newQty,
           }
-        }
+        },
       ).exec();
-      
+
 
       if (orderedProductWithVarients.hasVariant === true) {
-        await Product.findOneAndUpdate(
-          { _id: orderitem.product },
-          {
-            $inc: {
-              "variantFormArray.$[e1].variantCommittedQuantity": orderitem.quantity,
-            },
-          },
-          {
-            arrayFilters: [{ "e1.variantSku": orderitem.sku }],
-          }
-        ).exec();
-
         varforQty = orderedProductWithVarients.variantFormArray.filter(
           function (el) {
             return el.variantSku === orderitem.sku;
           }
         );
 
-        let qty = varforQty[0].variantQuantity - orderitem.quantity;
-        let reOrderQty = varforQty[0].variantReOrder;
-        if (qty <= reOrderQty && qty > 0) {
-          await Product.findOneAndUpdate(
-            { _id: orderitem.product },
-            { isReOrder: true }
-          );
-        }
-        if (qty <= 0) {
-          await Product.findOneAndUpdate(
-            { _id: orderitem.product },
-            { isStockOut: true }
-          );
-          await Product.findOneAndUpdate(
-            { _id: orderitem.product },
-            {
-              $set: {
-                "variantFormArray.$[e1].variantQuantity": 0,
-              },
+        let qty = varforQty[0].variantQuantity - orderedQty;
+        // if(qty <= 0){
+        //   qty = 0;
+        // }
+        await Product.findOneAndUpdate(
+          { _id: orderitem.productId },
+          {
+            $inc: {
+              "variantFormArray.$[e1].variantCommittedQuantity": orderitem.quantity,
             },
-            {
-              arrayFilters: [{ "e1.variantSku": orderitem.sku }],
+            $set: {
+              "variantFormArray.$[e1].variantQuantity": qty,
             }
-          ).exec();
-        } else {
-          await Product.findOneAndUpdate(
-            { _id: orderitem.product },
-            {
-              $inc: {
-                "variantFormArray.$[e1].variantQuantity": -orderitem.quantity,
-              },
-            },
-            {
-              arrayFilters: [{ "e1.variantSku": orderitem.sku }],
-            }
-          ).exec();
-        }
-      } else {
-        
-        let qty = orderedProductWithVarients.quantity - orderitem.quantity;
-        let reOrderQty = orderedProductWithVarients.reOrder - orderitem.quantity;
-        if (qty <= reOrderQty && qty > 0) {
-          await Product.findOneAndUpdate(
-            { _id: orderitem.product },
-            { isReOrder: true },
-          );
-        }
-        if (qty <= 0) {
-          await Product.findOneAndUpdate(
-            { _id: orderitem.product },
-            { isStockOut: true },
-          );
-        }
+          },
+          {
+            arrayFilters: [{ "e1.variantSku": orderitem.sku }],
+          }
+        ).exec();
       }
     }
 
@@ -156,19 +369,13 @@ exports.placeOrder = async (req, res, next) => {
     const order = new Order(finalData);
     const orderSave = await order.save();
 
-    if (req.body.couponId) {
-      await Coupon.findByIdAndUpdate(
-        { _id: req.body.couponId },
-        { $push: { couponUsedByUser: userId } }
-      );
-    }
     // UPDATE USER CARTS & CHECKOUT
     if (orderData.redeemAmount > 0) {
       await User.findOneAndUpdate(
         { _id: userId },
         {
           $set: { carts: [] },
-          $push: { checkouts: orderSave._id, usedCoupons: req.body.couponId },
+          $push: { checkouts: orderSave._id },
           $inc: {
             redeemedPoints: orderData.redeemAmount,
             points: -orderData.redeemAmount,
@@ -180,7 +387,7 @@ exports.placeOrder = async (req, res, next) => {
         { _id: userId },
         {
           $set: { carts: [] },
-          $push: { checkouts: orderSave._id, usedCoupons: req.body.couponId },
+          $push: { checkouts: orderSave._id },
           $inc: {
             points: orderData.earnAmount,
             earnedPoints: orderData.earnAmount,
@@ -192,78 +399,11 @@ exports.placeOrder = async (req, res, next) => {
         { _id: userId },
         {
           $set: { carts: [] },
-          $push: { checkouts: orderSave._id, usedCoupons: req.body.couponId },
+          $push: { checkouts: orderSave._id },
         }
       );
     }
-
     await Cart.deleteMany({ user: new ObjectId(userId) });
-
-    // Update Quantity
-    const orderDB = await Order.findOne({ _id: orderSave._id }).populate({
-      path: "orderedItems.product",
-      model: "Product",
-      select: "soldQuantity quantity",
-    });
-
-    if (orderDB && orderDB.orderedItems.length) {
-      const mOrderProducts = orderDB.orderedItems.map((m) => {
-        return {
-          _id: m.product._id,
-          soldQuantity: m.quantity,
-          productSoldQty: m.product.soldQuantity,
-          productQty: m.product.quantity,
-        };
-      });
-      mOrderProducts.forEach(async (m) => {
-        // Create Complex Query
-        const q1 = incrementSoldQuantityQuery(m);
-        const q2 = decrementQuantityQuery(m);
-        let finalQuery;
-        if (q1.$inc && q2.$inc) {
-          finalQuery = {
-            $inc: {
-              soldQuantity: q1.$inc.soldQuantity,
-              quantity: q2.$inc.quantity,
-            },
-          };
-        } else {
-          finalQuery = { ...q1, ...q2 };
-        }
-
-        const productData = await Product.findOne({ _id: m._id });
-
-        if (productData.isPreOrder !== true) {
-          Product.updateOne({ _id: m._id }, finalQuery, {
-            new: true,
-            upsert: true,
-            multi: true,
-          }).exec();
-        } else {
-          newqty = q2.$inc ? -q2.$inc.quantity : 0;
-          qty = productData.quantity - newqty;
-          if (qty < 0) {
-            await Product.updateOne(
-              { _id: m._id },
-              {
-                $set: {
-                  quantity: 0,
-                },
-              }
-            ).exec();
-          } else {
-            await Product.updateOne(
-              { _id: m._id },
-              {
-                $inc: {
-                  quantity: -newqty,
-                },
-              }
-            ).exec();
-          }
-        }
-      });
-    }
 
     res.json({
       _id: orderSave._id,
@@ -370,7 +510,7 @@ exports.placeTempOrder = async (req, res, next) => {
 
     // Update Quantity
     const orderDB = await OrderTemp.findOne({ _id: orderSave._id }).populate({
-      path: "orderedItems.product",
+      path: "orderedItems.productId",
       model: "Product",
       select: "soldQuantity quantity",
     });
@@ -428,72 +568,6 @@ exports.placeTempOrder = async (req, res, next) => {
   }
 };
 
-exports.placeOrderForRequest = async (req, res, next) => {
-  try {
-    const userId = req.userData.userId;
-    console.log(userId);
-    // Increment Order Id Unique
-    const incOrder = await UniqueId.findOneAndUpdate(
-      {},
-      { $inc: { requestId: 1 } },
-      { new: true, upsert: true }
-    );
-    const orderIdUnique = padLeadingZeros(incOrder.requestId);
-    const finalData = {
-      ...req.body,
-      ...{ user: userId, orderId: orderIdUnique },
-    };
-    const order = new requestOrder(finalData);
-    const orderSave = await order.save();
-
-    if (req.body.couponId) {
-      await Coupon.findByIdAndUpdate(
-        { _id: req.body.couponId },
-        { $push: { couponUsedByUser: userId } }
-      );
-    }
-
-    // UPDATE USER CARTS & CHECKOUT
-    // UPDATE USER CARTS & CHECKOUT
-    if (finalData.earnAmount > 0) {
-      await User.findOneAndUpdate(
-        { _id: userId },
-        {
-          $set: { carts: [] },
-          $push: { checkouts: orderSave._id, usedCoupons: req.body.couponId },
-          $inc: {
-            points: finalData.earnAmount,
-            earnedPoints: finalData.earnAmount,
-          },
-        }
-      );
-    } else {
-      await User.findOneAndUpdate(
-        { _id: userId },
-        {
-          $set: { carts: [] },
-          $push: { checkouts: orderSave._id, usedCoupons: req.body.couponId },
-        }
-      );
-    }
-
-    await Cart.deleteMany({ user: new ObjectId(userId) });
-
-    res.json({
-      _id: orderSave._id,
-      orderId: orderIdUnique,
-      success: true,
-      message: "Order Placed successfully",
-    });
-  } catch (err) {
-    console.log(err);
-    if (!err.statusCode) {
-      err.statusCode = 500;
-      err.message = "Something went wrong on database operation!";
-    }
-    next(err);
-  }
-};
 
 exports.getAllOrdersByUser = async (req, res, next) => {
   try {
@@ -503,7 +577,8 @@ exports.getAllOrdersByUser = async (req, res, next) => {
     let currentPage = req.query.page;
     let select = req.query.select;
     let queryData;
-    queryData = Order.find({ user: userId });
+
+    queryData = Order.find({ userId: userId });
 
     if (pageSize && currentPage) {
       queryData
@@ -514,10 +589,9 @@ exports.getAllOrdersByUser = async (req, res, next) => {
     const data = await queryData
       .select(select ? select : "")
       .sort({ createdAt: -1 })
-      .populate("user")
-      .select("-adsad");
+      .populate("userId")
 
-    const dataCount = await Order.countDocuments({ user: userId }).populate(
+    const dataCount = await Order.countDocuments({ userId: userId }).populate(
       "checkouts"
     );
 
@@ -545,9 +619,10 @@ exports.getOrderByUserOrderId = async (req, res, next) => {
     let select = req.query.select;
     let queryData;
 
-    queryData = Order.find({ user: userId, orderId: id }).populate(
-      "orderedItems.product"
-    );
+    queryData = Order.find({ userId: userId, orderId: id })
+      .populate(
+        "orderedItems.productId"
+      );
 
     if (pageSize && currentPage) {
       queryData
@@ -558,10 +633,8 @@ exports.getOrderByUserOrderId = async (req, res, next) => {
     const data = await queryData
       .select(select ? select : "")
       .sort({ createdAt: -1 })
-      .populate("user")
-      .select("-adsad");
 
-    const dataCount = await Order.countDocuments({ user: userId, orderId: id });
+    const dataCount = await Order.countDocuments({ userId: userId, orderId: id });
 
     res.status(200).json({
       data: data,
@@ -586,7 +659,7 @@ exports.getAllOrdersOfUserByAdmin = async (req, res, next) => {
     let currentPage = req.query.page;
     let select = req.query.select;
     let queryData;
-    queryData = Order.find({ user: userId });
+    queryData = Order.find({ userId: userId });
 
     if (pageSize && currentPage) {
       queryData
@@ -599,7 +672,7 @@ exports.getAllOrdersOfUserByAdmin = async (req, res, next) => {
     // .populate('user')
     // .select('name')
 
-    const dataCount = await Order.countDocuments({ user: userId });
+    const dataCount = await Order.countDocuments({ userId: userId });
 
     res.status(200).json({
       data: data,
@@ -623,52 +696,16 @@ exports.getOrderDetailsById = async (req, res, next) => {
     const query = { _id: orderId };
     const data = await Order.findOne(query)
       .populate({
-        path: "orderedItems.product",
+        path: "orderedItems.productId",
         model: "Product",
         select:
           "name slug sellingPrice medias images sku status vendor variants options variantFormArray variantDataArray",
       })
-      .populate({
-        path: "user",
-        model: "User",
-        select: "fullName phoneNo email checkouts addresses",
-        populate: {
-          path: "addresses",
-          model: "Address",
-        },
-      });
+      .populate("userId");
 
     res.status(200).json({
       data: data,
       message: "Order Details fetched Successfully!",
-    });
-  } catch (err) {
-    if (!err.statusCode) {
-      err.statusCode = 500;
-      err.message = "Something went wrong on database operation!";
-    }
-    next(err);
-  }
-};
-
-exports.getRequestOrderDetailsById = async (req, res, next) => {
-  const orderId = req.params.id;
-
-  try {
-    const query = { _id: orderId };
-    const data = await requestOrder.findOne(query).populate({
-      path: "user",
-      model: "User",
-      select: "fullName phoneNo email checkouts addresses",
-      populate: {
-        path: "addresses",
-        model: "Address",
-      },
-    });
-
-    res.status(200).json({
-      data: data,
-      message: "Order details fetched Successfully!",
     });
   } catch (err) {
     if (!err.statusCode) {
@@ -1117,7 +1154,7 @@ exports.getAllOrdersByAdminNoPaginate = async (req, res, next) => {
   try {
     const order = await Order.find()
       .populate({
-        path: "orderedItems.product",
+        path: "orderedItems.productId",
         model: "Product",
         select:
           "productName productSlug price category categorySlug subCategory subCategorySlug brand brandSlug images",
@@ -1274,7 +1311,7 @@ exports.changeDeliveryStatus = async (req, res, next) => {
     //     const order = await Order.findOne({_id: req.body._id})
     //         .populate(
     //             {
-    //                 path: 'orderedItems.product',
+    //                 path: 'orderedItems.productId',
     //                 model: 'Product',
     //                 select: 'soldQuantity quantity'
     //             }
@@ -1604,7 +1641,7 @@ exports.updateSessionKey = async (req, res, next) => {
  * ADDITIONAL FUNCTIONS
  */
 function padLeadingZeros(num) {
-  return String(num).padStart(4, "0");
+  return 'PO'+String(num).padStart(4, "0");
 }
 
 function incrementSoldQuantityQuery(item) {
@@ -1652,11 +1689,12 @@ exports.getAllOrdersByAdmin = async (req, res, next) => {
     const { select } = req.body;
     const searchQuery = req.query.q;
 
-    const dataAggregates = await Order.find({created : -1})
-    .populate({
-      path: 'user',
-      select: 'fullName phoneNo'
-    })
+    console.log("finding all data");
+    const dataAggregates = await Order.find().sort({ createdAt: -1 })
+      .populate({
+        path: 'userId',
+        select: 'fullName phoneNo'
+      })
     // .aggregate(aggregateStages)
 
     if (pagination) {

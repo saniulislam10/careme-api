@@ -137,6 +137,10 @@ const schema = new Schema({
         type: Number,
         required: false
     },
+    soldQuantity: {
+        type: Number,
+        required: false
+    },
     committedQuantity: {
         type: Number,
         required: false
