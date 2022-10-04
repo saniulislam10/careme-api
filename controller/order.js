@@ -1689,7 +1689,6 @@ exports.getAllOrdersByAdmin = async (req, res, next) => {
     const { select } = req.body;
     const searchQuery = req.query.q;
 
-    console.log("finding all data");
     const dataAggregates = await Order.find().sort({ createdAt: -1 })
       .populate({
         path: 'userId',

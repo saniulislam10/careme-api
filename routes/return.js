@@ -13,11 +13,12 @@ const router = express.Router();
  */
 
 // CREATE
-router.post('/place-return', checkAdminAuth, controller.addReturn);
+router.post('/place-return', controller.addReturn);
 // READ
 router.post('/get-all-returns-by-orderNo', checkAdminAuth, controller.getAllReturnsByOrderNo);
 router.get('/get-all-returns', checkAdminAuth, controller.getAllReturns);
 router.get('/get-return-by-id/:id', checkAdminAuth, controller.getReturnById);
+router.put('/update-return-by-id/:id', checkAdminAuth, controller.updateReturnById);
 // UPDATE
 // DELETE
 

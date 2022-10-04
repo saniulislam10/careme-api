@@ -147,6 +147,28 @@ exports.getReturnById = async (req, res, next) => {
   }
 };
 
+exports.updateReturnById = async (req, res, next) => {
+
+  try {
+
+    const id = req.params.id;
+    const data = req.body;
+    await Return.findOneAndUpdate({ _id: id }, { $set: data });
+
+    res.json({
+      success: true,
+      message: "Return Updated successfully",
+    });
+  } catch (err) {
+    console.log(err);
+    if (!err.statusCode) {
+      err.statusCode = 500;   
+      err.message = "Something went wrong on database operation!";
+    }
+    next(err);
+  }
+};
+
 
 /**
  * ADDITIONAL FUNCTIONS

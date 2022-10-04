@@ -45,7 +45,19 @@ const schema = new Schema(
             type: Number,
             required: false
         },
-        products: []  
+        products: [],
+        refundEligible : {
+            type: Boolean,
+            required: false
+        },
+        reason : {
+            type: String,
+            required: false
+        } , 
+        images : [{
+            type: String,
+            required: false
+        }]  
     },
     {
         timestamps: true
