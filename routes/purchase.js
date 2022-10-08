@@ -3,6 +3,8 @@ const express = require('express');
 
 // Created Require Files..
 const controller = require('../controller/purchase');
+const checkAdminAuth = require('../middileware/check-admin-auth');
+const checkIpWhitelist = require('../middileware/check-ip-whitelist');
 
 // Get Express Router Function..
 const router = express.Router();
@@ -14,18 +16,19 @@ const router = express.Router();
 
 
 // CREATE
-router.post('/add', controller.addSingle);
+router.post('/add', checkAdminAuth, controller.addSingle);
 
 // READ
-router.get('/get/:id', controller.getById);
-router.post('/get-all', controller.getAll);
+router.get('/get/:id', checkAdminAuth, controller.getById);
+router.post('/get-all', checkAdminAuth, controller.getAll);
+router.post('/get-by-search', controller.getBySearch);
 
 // UPDATE
-router.put('/edit', controller.updateById);
-router.put('/edit-recieved', controller.updateRecieved);
+router.put('/edit', checkAdminAuth, controller.updateById);
+router.put('/edit-recieved', checkAdminAuth, controller.updateRecieved);
 
 // DELETE
-router.delete('/delete/:id', controller.deleteById);
+router.delete('/delete/:id', checkAdminAuth, controller.deleteById);
 
 
 // Export All router..

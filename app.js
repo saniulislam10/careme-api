@@ -103,6 +103,7 @@ const cityRoutes = require('./routes/city');
   * MAIN BASE ROUTER WITH IMPORTED ROUTES
   */
  app.use('/api/admin', adminRoutes);
+ app.use('/api/brand', brandRoutes);
  app.use('/api/product-type', productTypeRoutes);
  app.use('/api/country', countryRoutes);
  app.use('/api/review', reviewRoutes);

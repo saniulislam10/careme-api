@@ -76,14 +76,23 @@ exports.getAll = async (req, res, next) => {
   try {
     let paginate = req.body.paginate;
     let filter = req.body.filter;
+    let sort = req.body.sort;
+
 
     let queryData;
     let dataCount;
+
 
     if (filter) {
       queryData = Model.find(filter).populate('supplier');
     } else {
       queryData = Model.find().populate('supplier');
+    }
+
+    if (sort) {
+      queryData = queryData.sort(sort);
+    } else {
+      queryData = queryData.sort({ createdAt: -1 });
     }
 
     if (paginate) {
@@ -92,8 +101,7 @@ exports.getAll = async (req, res, next) => {
         .limit(Number(paginate.pageSize));
     }
 
-    const data = await queryData
-      .sort({ createdAt: -1 });
+    const data = await queryData;
 
     if (filter) {
       dataCount = await Model.countDocuments(filter);
@@ -104,6 +112,72 @@ exports.getAll = async (req, res, next) => {
     res.status(200).json({
       data: data,
       count: dataCount,
+    });
+  } catch (err) {
+    console.log(err);
+    if (!err.statusCode) {
+      err.statusCode = 500;
+      err.message = "Something went wrong on database operation!";
+    }
+    next(err);
+  }
+};
+
+exports.getBySearch = async (req, res, next) => {
+  try {
+    console.log("Searching");
+    // Query Text
+    let search = req.query.q;
+    // Pagination
+    const pageSize = +req.query.pageSize;
+    const currentPage = +req.query.currentPage;
+    // filter
+    let sort = req.body.sort;
+
+    let filter = req.body.filter;
+
+    console.log(search);
+    console.log(sort);
+    // Build Regex Query
+    const newQuery = search.split(/[ ,]+/);
+    const queryArray = newQuery.map((str) => ({ purchaseId: RegExp(str, "i") }));
+    const queryArray2 = newQuery.map((str) => ({ supplier_link: RegExp(str, "i") }));
+
+    let dataDoc;
+
+    if (filter) {
+      dataDoc = Model.find({
+        $and: [
+          filter,
+          {
+            $or: [
+              { $and: queryArray },
+              { $and: queryArray2 },
+            ],
+          },
+        ],
+      });
+    } else {
+      dataDoc = Model.find({
+        $or: [
+          { $and: queryArray },
+          { $and: queryArray2 },
+        ]
+      })
+    }
+
+    if (sort) {
+      dataDoc = dataDoc.sort(sort);
+    }
+    if (pageSize && currentPage) {
+      dataDoc.skip(pageSize * (currentPage - 1)).limit(Number(pageSize));
+    }
+
+    const results = await dataDoc
+      .populate('supplier')
+
+    res.status(200).json({
+      data: results,
     });
   } catch (err) {
     console.log(err);
@@ -189,5 +263,5 @@ exports.updateRecieved = async (req, res, next) => {
  * ADDITIONAL FUNCTIONS
  */
 function padLeadingZeros(num) {
-  return 'PO'+String(num).padStart(4, "0");
+  return 'PO' + String(num).padStart(4, "0");
 }

@@ -1641,7 +1641,7 @@ exports.updateSessionKey = async (req, res, next) => {
  * ADDITIONAL FUNCTIONS
  */
 function padLeadingZeros(num) {
-  return 'PO'+String(num).padStart(4, "0");
+  return 'SO'+String(num).padStart(4, "0");
 }
 
 function incrementSoldQuantityQuery(item) {
