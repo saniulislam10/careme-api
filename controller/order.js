@@ -1683,35 +1683,48 @@ function decrementQuantityQuery(item) {
 
 exports.getAllOrdersByAdmin = async (req, res, next) => {
   try {
-    const { filter } = req.body;
-    const { pagination } = req.body;
-    const { sort } = req.body;
-    const { select } = req.body;
-    const searchQuery = req.query.q;
+    let paginate = req.body.paginate;
+    let filter = req.body.filter;
+    let sort = req.body.sort;
+    let select = req.body.select;
 
-    const dataAggregates = await Order.find().sort({ createdAt: -1 })
-      .populate({
-        path: 'userId',
-        select: 'fullName phoneNo'
-      })
-    // .aggregate(aggregateStages)
+    let queryDoc;
+    let countDoc;
 
-    if (pagination) {
-      res.status(200).json({
-        ...{ ...dataAggregates[0] },
-        ...{
-          success: true,
-          message: "Success",
-        },
-      });
+    // Filter
+    if (filter) {
+      queryDoc = Order.find(filter);
+      countDoc = Order.countDocuments(filter);
     } else {
-      res.status(200).json({
-        data: dataAggregates,
-        success: true,
-        message: "Success",
-        count: dataAggregates.length,
-      });
+      queryDoc = Order.find();
+      countDoc = Order.countDocuments();
     }
+
+    // Sort
+    if (sort) {
+      queryDoc = queryDoc.sort(sort);
+    }
+    // Pagination
+    if (paginate) {
+      queryDoc
+        .skip(Number(paginate.pageSize) * (Number(paginate.currentPage) - 1))
+        .limit(Number(paginate.pageSize));
+    }
+
+    if (select) {
+      queryDoc.select(select);
+    }
+
+    const data = await queryDoc.populate({
+      path: 'userId',
+      select: 'fullName phoneNo'
+    });
+
+    const count = await countDoc;
+    res.status(200).json({
+      data: data,
+      count: count
+    });
   } catch (err) {
     console.log(err);
     if (!err.statusCode) {

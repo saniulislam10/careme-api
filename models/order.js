@@ -71,10 +71,38 @@ const schema = new Schema(
         required: false,
       },
     ],
+    subTotal: {
+      type: Number,
+      required: true,
+    },
+    advanceTotal: {
+      type: Number,
+      required: true,
+    },
     orderNotes: {
       type: String,
       required: false,
     },
+    couponCode: {
+      type: String,
+      required: false,
+    },
+    redeemedPoints: {
+      type: Number,
+      required: false,
+    },
+    earnedPoints: {
+      type: Number,
+      required: false,
+    },
+    shippingCharge: {
+      type: Number,
+      required: true,
+    },
+    paidAmount : {
+      type: Number,
+      required: true
+    }
   },
   {
     timestamps: true,
