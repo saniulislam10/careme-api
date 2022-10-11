@@ -163,16 +163,97 @@ exports.getAllReturns = async (req, res, next) => {
     next(err);
   }
 };
+
 exports.getBySearch = async (req, res, next) => {
-
   try {
+    // Query Text
+    const search = req.query.q;
 
-    const data = await Return.find().sort({ createdAt: -1 });
+    console.log(search);
+    // Additional Filter
+    const filter = req.body.filter;
+    const sort = req.body.sort;
 
-    res.json({
-      data: data,
-      success: true,
-      message: "All Return fetched successfully",
+    // Pagination
+    const pageSize = +req.query.pageSize;
+    const currentPage = +req.query.currentPage;
+
+    // Build Regex Query
+    const newQuery = search.split(/[ ,]+/);
+    const queryArray = newQuery.map((str) => ({ invoiceId: RegExp(str, "i") }));
+    const queryArray2 = newQuery.map((str) => ({ orderNumber: RegExp(str, "i") }));
+    const queryArray3 = newQuery.map((str) => ({ customerName: RegExp(str, 'i') }));
+    // const queryArray4 = newQuery.map((str) => ({username: RegExp(str, 'i')}));
+    // const regex = new RegExp(query, 'i')
+
+    let dataDoc;
+    let countDoc;
+
+    if (filter) {
+      dataDoc = Invoice.find({
+        $and: [
+          filter,
+          {
+            $or: [
+              { $and: queryArray },
+              { $and: queryArray2 },
+              { $and: queryArray3 },
+              // {$and: queryArray4},
+            ],
+          },
+        ],
+      });
+
+      countDoc = Invoice.countDocuments({
+        $and: [
+          filter,
+          {
+            $or: [
+              { $and: queryArray },
+              { $and: queryArray2 },
+              { $and: queryArray3 },
+              // {$and: queryArray4},
+            ],
+          },
+        ],
+      });
+    } else {
+      dataDoc = Invoice.find({
+        $or: [
+          { $and: queryArray },
+          { $and: queryArray2 },
+          { $and: queryArray3 },
+          // {$and: queryArray4},
+        ],
+      });
+
+      countDoc = Invoice.countDocuments({
+        $or: [
+          { $and: queryArray },
+          { $and: queryArray2 },
+          { $and: queryArray3 },
+          // {$and: queryArray4},
+        ],
+      });
+    }
+
+    if (sort) {
+      dataDoc = dataDoc.sort(sort);
+    }
+
+
+    if (pageSize && currentPage) {
+      dataDoc.skip(pageSize * (currentPage - 1)).limit(Number(pageSize));
+    }
+
+    const results = await dataDoc;
+    const count = await countDoc;
+
+    console.log(results);
+
+    res.status(200).json({
+      data: results,
+      count: count,
     });
   } catch (err) {
     console.log(err);
