@@ -147,7 +147,24 @@ exports.getAllReturns = async (req, res, next) => {
 
   try {
 
-    const data = await Return.find().sort({ createdAt: -1 });
+    let sort = req.body.sort;
+    let paginate = req.body.paginate;
+
+    let dataDoc;
+    dataDoc = Return.find();
+    if(sort){
+      dataDoc = dataDoc.sort(sort);
+    }else{
+      dataDoc = dataDoc.sort({ createdAt: -1 })
+    }
+
+    if (paginate) {
+      dataDoc
+        .skip(Number(paginate.pageSize) * (Number(paginate.currentPage) - 1))
+        .limit(Number(paginate.pageSize));
+    }
+
+    let data = await dataDoc;
 
     res.json({
       data: data,

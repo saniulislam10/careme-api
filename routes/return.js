@@ -17,8 +17,8 @@ router.post('/place-return', controller.addReturn);
 // READ
 router.post('/get-all-returns-by-orderNo', checkAdminAuth, controller.getAllReturnsByOrderNo);
 router.get('/get-all-returns-by-invoiceId/:id', checkAdminAuth, controller.getAllReturnsByInvoiceId);
-router.get('/get-all-returns', checkAdminAuth, controller.getAllReturns);
-router.get('/get-returns-by-search', checkAdminAuth, controller.getBySearch);
+router.post('/get-all-returns', checkAdminAuth, controller.getAllReturns);
+router.post('/get-return-by-search', checkAdminAuth, controller.getBySearch);
 router.get('/get-return-by-id/:id', checkAdminAuth, controller.getReturnById);
 router.put('/update-return-by-id/:id', checkAdminAuth, controller.updateReturnById);
 router.put('/recieve-return-by-id/:id', checkAdminAuth, controller.recieveReturnById);

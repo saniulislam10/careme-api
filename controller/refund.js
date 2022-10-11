@@ -50,6 +50,109 @@ exports.getAll = async (req, res, next) => {
         next(err);
     }
 };
+
+exports.getBySearch = async (req, res, next) => {
+    try {
+      // Query Text
+      console.log("Searching");
+      const search = req.query.q;
+  
+      console.log(search);
+      // Additional Filter
+      const filter = req.body.filter;
+      const sort = req.body.sort;
+  
+      // Pagination
+      const pageSize = +req.query.pageSize;
+      const currentPage = +req.query.currentPage;
+  
+      // Build Regex Query
+      const newQuery = search.split(/[ ,]+/);
+      const queryArray = newQuery.map((str) => ({ refundId: RegExp(str, "i") }));
+      const queryArray2 = newQuery.map((str) => ({ returnId: RegExp(str, "i") }));
+      const queryArray3 = newQuery.map((str) => ({ orderNumber: RegExp(str, 'i') }));
+      // const queryArray4 = newQuery.map((str) => ({username: RegExp(str, 'i')}));
+      // const regex = new RegExp(query, 'i')
+  
+      let dataDoc;
+      let countDoc;
+  
+      if (filter) {
+        dataDoc = Refund.find({
+          $and: [
+            filter,
+            {
+              $or: [
+                { $and: queryArray },
+                { $and: queryArray2 },
+                { $and: queryArray3 },
+                // {$and: queryArray4},
+              ],
+            },
+          ],
+        });
+  
+        countDoc = Refund.countDocuments({
+          $and: [
+            filter,
+            {
+              $or: [
+                { $and: queryArray },
+                { $and: queryArray2 },
+                { $and: queryArray3 },
+                // {$and: queryArray4},
+              ],
+            },
+          ],
+        });
+      } else {
+        dataDoc = Refund.find({
+          $or: [
+            { $and: queryArray },
+            { $and: queryArray2 },
+            { $and: queryArray3 },
+            // {$and: queryArray4},
+          ],
+        });
+  
+        countDoc = Refund.countDocuments({
+          $or: [
+            { $and: queryArray },
+            { $and: queryArray2 },
+            { $and: queryArray3 },
+            // {$and: queryArray4},
+          ],
+        });
+      }
+  
+      if (sort) {
+        dataDoc = dataDoc.sort(sort);
+      }
+  
+  
+      if (pageSize && currentPage) {
+        dataDoc.skip(pageSize * (currentPage - 1)).limit(Number(pageSize));
+      }
+  
+      const results = await dataDoc;
+      const count = await countDoc;
+  
+      console.log(results);
+  
+      res.status(200).json({
+        data: results,
+        count: count,
+      });
+    } catch (err) {
+      console.log(err);
+      if (!err.statusCode) {
+        err.statusCode = 500;
+        err.message = "Something went wrong on database operation!";
+      }
+      next(err);
+    }
+  };
+
 exports.getFilteredData = async (req, res, next) => {
     try {
 
