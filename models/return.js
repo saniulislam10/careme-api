@@ -56,7 +56,11 @@ const schema = new Schema(
         images : [{
             type: String,
             required: false
-        }]  
+        }],
+        notes : {
+            type: String,
+            required: false
+        }
     },
     {
         timestamps: true
