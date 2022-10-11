@@ -180,9 +180,9 @@ exports.getBySearch = async (req, res, next) => {
 
     // Build Regex Query
     const newQuery = search.split(/[ ,]+/);
-    const queryArray = newQuery.map((str) => ({ invoiceId: RegExp(str, "i") }));
+    const queryArray = newQuery.map((str) => ({ returnId: RegExp(str, "i") }));
     const queryArray2 = newQuery.map((str) => ({ orderNumber: RegExp(str, "i") }));
-    const queryArray3 = newQuery.map((str) => ({ customerName: RegExp(str, 'i') }));
+    const queryArray3 = newQuery.map((str) => ({ invoiceId: RegExp(str, 'i') }));
     // const queryArray4 = newQuery.map((str) => ({username: RegExp(str, 'i')}));
     // const regex = new RegExp(query, 'i')
 
@@ -190,7 +190,7 @@ exports.getBySearch = async (req, res, next) => {
     let countDoc;
 
     if (filter) {
-      dataDoc = Invoice.find({
+      dataDoc = Return.find({
         $and: [
           filter,
           {
@@ -204,7 +204,7 @@ exports.getBySearch = async (req, res, next) => {
         ],
       });
 
-      countDoc = Invoice.countDocuments({
+      countDoc = Return.countDocuments({
         $and: [
           filter,
           {
@@ -218,7 +218,7 @@ exports.getBySearch = async (req, res, next) => {
         ],
       });
     } else {
-      dataDoc = Invoice.find({
+      dataDoc = Return.find({
         $or: [
           { $and: queryArray },
           { $and: queryArray2 },
@@ -227,7 +227,7 @@ exports.getBySearch = async (req, res, next) => {
         ],
       });
 
-      countDoc = Invoice.countDocuments({
+      countDoc = Return.countDocuments({
         $or: [
           { $and: queryArray },
           { $and: queryArray2 },
