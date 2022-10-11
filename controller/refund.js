@@ -109,11 +109,31 @@ exports.editById = async (req, res, next) => {
 
         let updatedData = req.body;
         const data = Refund.findOne({ _id: updatedData._id });
-        const finalData = { ...updatedData, ...{ password: data.password } }
         await Refund.updateOne({ _id: updatedData._id }, { $set: updatedData })
 
         res.status(200).json({
             message: "Refund edited successfully",
+        });
+    } catch (err) {
+        console.log(err);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+            err.message = "Something went wrong on database operation!";
+        }
+        next(err);
+    }
+};
+
+exports.getByReturnId = async (req, res, next) => {
+    try {
+
+        let returnId = req.params.id;
+        console.log(returnId);
+        // const data = Refund.findOne({ returnId: returnId });
+
+        res.status(200).json({
+            data: data,
+            message: "Refund fetched successfully"
         });
     } catch (err) {
         console.log(err);

@@ -20,6 +20,7 @@ router.post('/add', checkAdminAuth, controller.add);
 // READ
 router.get('/get-all', checkAdminAuth, controller.getAll);
 router.put('/edit-by-id', controller.editById);
+router.get('/get-by-returnId/:id', controller.getByReturnId);
 router.post('/get-filtered-data', controller.getFilteredData);
 router.delete('/delete-by-id/:id', checkAdminAuth, controller.deleteById);
 

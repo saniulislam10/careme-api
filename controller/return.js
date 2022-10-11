@@ -6,7 +6,7 @@ const UniqueId = require("../models/unique-id");
 
 const Return = require("../models/return");
 const User = require("../models/user");
-const Product = require("../models/order");
+const Product = require("../models/product");
 const Order = require("../models/order");
 const Invoice = require("../models/invoice");
 
@@ -120,8 +120,50 @@ exports.getAllReturnsByOrderNo = async (req, res, next) => {
     next(err);
   }
 };
+exports.getAllReturnsByInvoiceId = async (req, res, next) => {
+
+  try {
+
+    const invoiceId = req.params.id;
+
+    const data = await Return.find({ invoiceId: invoiceId });
+
+    res.json({
+      data: data,
+      success: true,
+      message: "Return fetched successfully",
+    });
+  } catch (err) {
+    console.log(err);
+    if (!err.statusCode) {
+      err.statusCode = 500;
+      err.message = "Something went wrong on database operation!";
+    }
+    next(err);
+  }
+};
 
 exports.getAllReturns = async (req, res, next) => {
+
+  try {
+
+    const data = await Return.find().sort({ createdAt: -1 });
+
+    res.json({
+      data: data,
+      success: true,
+      message: "All Return fetched successfully",
+    });
+  } catch (err) {
+    console.log(err);
+    if (!err.statusCode) {
+      err.statusCode = 500;
+      err.message = "Something went wrong on database operation!";
+    }
+    next(err);
+  }
+};
+exports.getBySearch = async (req, res, next) => {
 
   try {
 
@@ -224,14 +266,11 @@ function padLeadingZeros(num) {
 }
 
 async function incQtySku(sku, qty) {
-  console.log("adding qty to products");
-  console.log(qty);
-  console.log(sku);
   let mainSku;
   if (sku) {
     mainSku = sku.split('-')[0];
-    console.log(mainSku);
   }
+  console.log(mainSku);
   await Product.findOneAndUpdate(
     { sku: mainSku },
     {
