@@ -19,6 +19,7 @@ router.post('/get-all-returns-by-orderNo', checkAdminAuth, controller.getAllRetu
 router.get('/get-all-returns', checkAdminAuth, controller.getAllReturns);
 router.get('/get-return-by-id/:id', checkAdminAuth, controller.getReturnById);
 router.put('/update-return-by-id/:id', checkAdminAuth, controller.updateReturnById);
+router.put('/recieve-return-by-id/:id', checkAdminAuth, controller.recieveReturnById);
 // UPDATE
 // DELETE
 

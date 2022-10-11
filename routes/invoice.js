@@ -18,6 +18,7 @@ router.post('/place-invoice', checkAdminAuth, controller.addInvoice);
 //READ
 router.post('/get-all-invoices-by-orderNo', controller.getAllInvoicesByOrderNo);
 router.post('/get-all-invoices', checkAdminAuth, controller.getAllInvoices);
+router.post('/get-invoices-by-search', checkAdminAuth, controller.getInvoicesBySearch);
 router.get('/get-invoice-by-id/:id', checkAdminAuth, controller.getInvoiceById);
 
 

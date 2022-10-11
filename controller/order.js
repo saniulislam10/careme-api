@@ -1717,7 +1717,7 @@ exports.getAllOrdersByAdmin = async (req, res, next) => {
 
     const data = await queryDoc.populate({
       path: 'userId',
-      select: 'fullName phoneNo'
+      select: 'fullName phoneNo email checkouts'
     });
 
     const count = await countDoc;

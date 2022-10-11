@@ -174,3 +174,20 @@ exports.tagStatus = new Schema({
     {
         _id: true
     })
+exports.comment = new Schema({
+    text: {
+        type: String,
+        required: true
+    },
+    date: {
+        type: Date,
+        required: true
+    },
+    name: {
+        type: String,
+        required: true
+    },
+},
+    {
+        _id: true
+    })

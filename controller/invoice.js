@@ -5,7 +5,7 @@ const Order = require("../models/order");
 
 exports.addInvoice = async (req, res, next) => {
 
-  
+
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const error = new Error(
@@ -31,16 +31,16 @@ exports.addInvoice = async (req, res, next) => {
     const invoiceSave = await invoice.save();
 
     console.log(finalData);
-    
-    const orderData = await Order.find({ orderId: finalData.orderNumber});
+
+    const orderData = await Order.find({ orderId: finalData.orderNumber });
     console.log(orderData);
     console.log(orderData[0].orderedItems);
 
-    for(let i=0; i<finalData.products.length; i++){
+    for (let i = 0; i < finalData.products.length; i++) {
       await Order.findOneAndUpdate(
         { orderId: finalData.orderNumber },
         {
-          $inc : {
+          $inc: {
             "orderedItems.$[e1].invoicedQuantity": finalData.products[i].quantity,
           }
         },
@@ -51,7 +51,7 @@ exports.addInvoice = async (req, res, next) => {
         }
       );
     }
-    
+
 
     res.json({
       _id: invoiceSave._id,
@@ -72,10 +72,10 @@ exports.addInvoice = async (req, res, next) => {
 exports.getAllInvoicesByOrderNo = async (req, res, next) => {
 
   try {
-    
+
     const orderNo = req.body.data;
     console.log(orderNo);
-    const data = await Invoice.find({orderNumber: orderNo});
+    const data = await Invoice.find({ orderNumber: orderNo });
 
     res.json({
       data: data,
@@ -144,34 +144,135 @@ exports.getAllInvoices = async (req, res, next) => {
     }
     next(err);
   }
-  };
+};
 
-  exports.getInvoiceById = async (req, res, next) => {
+exports.getInvoiceById = async (req, res, next) => {
 
-    try {
-        
+  try {
+
     const id = req.params.id;
-      const data = await Invoice.findOne({_id: id});
-      
-      res.json({
-        data: data,
-        success: true,
-        message: "All Invoice fetched successfully",
-      });
-    } catch (err) {
-      console.log(err);
-      if (!err.statusCode) {
-        err.statusCode = 500;
-        err.message = "Something went wrong on database operation!";
-      }
-      next(err);
+    const data = await Invoice.findOne({ _id: id });
+
+    res.json({
+      data: data,
+      success: true,
+      message: "All Invoice fetched successfully",
+    });
+  } catch (err) {
+    console.log(err);
+    if (!err.statusCode) {
+      err.statusCode = 500;
+      err.message = "Something went wrong on database operation!";
     }
-  };
+    next(err);
+  }
+};
+
+exports.getInvoicesBySearch = async (req, res, next) => {
+  try {
+    // Query Text
+    const search = req.query.q;
+
+    console.log(search);
+    // Additional Filter
+    const filter = req.body.filter;
+    const sort = req.body.sort;
+
+    // Pagination
+    const pageSize = +req.query.pageSize;
+    const currentPage = +req.query.currentPage;
+
+    // Build Regex Query
+    const newQuery = search.split(/[ ,]+/);
+    const queryArray = newQuery.map((str) => ({ invoiceId: RegExp(str, "i") }));
+    const queryArray2 = newQuery.map((str) => ({ orderNumber: RegExp(str, "i") }));
+    const queryArray3 = newQuery.map((str) => ({ customerName: RegExp(str, 'i')}));
+    // const queryArray4 = newQuery.map((str) => ({username: RegExp(str, 'i')}));
+    // const regex = new RegExp(query, 'i')
+
+    let dataDoc;
+    let countDoc;
+
+    if (filter) {
+      dataDoc = Invoice.find({
+        $and: [
+          filter,
+          {
+            $or: [
+              { $and: queryArray },
+              { $and: queryArray2 },
+              { $and: queryArray3 },
+              // {$and: queryArray4},
+            ],
+          },
+        ],
+      });
+
+      countDoc = Invoice.countDocuments({
+        $and: [
+          filter,
+          {
+            $or: [
+              { $and: queryArray },
+              { $and: queryArray2 },
+              { $and: queryArray3 },
+              // {$and: queryArray4},
+            ],
+          },
+        ],
+      });
+    } else {
+      dataDoc = Invoice.find({
+        $or: [
+          { $and: queryArray },
+          { $and: queryArray2 },
+          { $and: queryArray3 },
+          // {$and: queryArray4},
+        ],
+      });
+
+      countDoc = Invoice.countDocuments({
+        $or: [
+          { $and: queryArray },
+          { $and: queryArray2 },
+          { $and: queryArray3 },
+          // {$and: queryArray4},
+        ],
+      });
+    }
+
+    if(sort){
+      dataDoc = dataDoc.sort(sort);
+    }
+
+
+    if (pageSize && currentPage) {
+      dataDoc.skip(pageSize * (currentPage - 1)).limit(Number(pageSize));
+    }
+
+    const results = await dataDoc;
+    const count = await countDoc;
+
+    console.log(results);
+
+    res.status(200).json({
+      data: results,
+      count: count,
+    });
+  } catch (err) {
+    console.log(err);
+    if (!err.statusCode) {
+      err.statusCode = 500;
+      err.message = "Something went wrong on database operation!";
+    }
+    next(err);
+  }
+};
 
 
 /**
  * ADDITIONAL FUNCTIONS
  */
 function padLeadingZeros(num) {
-  return 'INV'+String(num).padStart(4, "0");
+  return 'INV' + String(num).padStart(4, "0");
 }

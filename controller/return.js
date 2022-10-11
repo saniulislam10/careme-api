@@ -6,7 +6,9 @@ const UniqueId = require("../models/unique-id");
 
 const Return = require("../models/return");
 const User = require("../models/user");
+const Product = require("../models/order");
 const Order = require("../models/order");
+const Invoice = require("../models/invoice");
 
 exports.addReturn = async (req, res, next) => {
   const errors = validationResult(req);
@@ -49,12 +51,27 @@ exports.addReturn = async (req, res, next) => {
     }
     // totalReturnAmount
 
-    for(let i=0; i<finalData.products.length; i++){
+    for (let i = 0; i < finalData.products.length; i++) {
       await Order.findOneAndUpdate(
         { orderId: finalData.orderNumber },
         {
-          $inc : {
+          $inc: {
             "orderedItems.$[e1].returnedQuantity": finalData.products[i].quantity,
+          }
+        },
+        {
+          arrayFilters: [
+            { "e1.sku": finalData.products[i].sku },
+          ],
+        }
+      );
+    }
+    for (let i = 0; i < finalData.products.length; i++) {
+      await Invoice.findOneAndUpdate(
+        { invoiceId: finalData.invoiceId },
+        {
+          $inc: {
+            "products.$[e1].returnedQuantity": finalData.products[i].quantity,
           }
         },
         {
@@ -108,7 +125,7 @@ exports.getAllReturns = async (req, res, next) => {
 
   try {
 
-    const data = await Return.find().sort({createdAt : -1});
+    const data = await Return.find().sort({ createdAt: -1 });
 
     res.json({
       data: data,
@@ -140,7 +157,7 @@ exports.getReturnById = async (req, res, next) => {
   } catch (err) {
     console.log(err);
     if (!err.statusCode) {
-      err.statusCode = 500;   
+      err.statusCode = 500;
       err.message = "Something went wrong on database operation!";
     }
     next(err);
@@ -162,7 +179,36 @@ exports.updateReturnById = async (req, res, next) => {
   } catch (err) {
     console.log(err);
     if (!err.statusCode) {
-      err.statusCode = 500;   
+      err.statusCode = 500;
+      err.message = "Something went wrong on database operation!";
+    }
+    next(err);
+  }
+};
+exports.recieveReturnById = async (req, res, next) => {
+
+  try {
+
+    const id = req.params.id;
+    const data = req.body;
+    await Return.findOneAndUpdate({ _id: id }, { $set: data });
+
+    console.log(data.recievedQuantity);
+
+    data.products.forEach(m => { incQtySku(m.sku, m.recievedQty) });
+
+    if (data.recievedQuantity) {
+
+    }
+
+    res.json({
+      success: true,
+      message: "Return Updated successfully",
+    });
+  } catch (err) {
+    console.log(err);
+    if (!err.statusCode) {
+      err.statusCode = 500;
       err.message = "Something went wrong on database operation!";
     }
     next(err);
@@ -174,5 +220,27 @@ exports.updateReturnById = async (req, res, next) => {
  * ADDITIONAL FUNCTIONS
  */
 function padLeadingZeros(num) {
-  return 'RTO'+String(num).padStart(4, "0");
+  return 'RTO' + String(num).padStart(4, "0");
+}
+
+async function incQtySku(sku, qty) {
+  console.log("adding qty to products");
+  console.log(qty);
+  console.log(sku);
+  let mainSku;
+  if (sku) {
+    mainSku = sku.split('-')[0];
+    console.log(mainSku);
+  }
+  await Product.findOneAndUpdate(
+    { sku: mainSku },
+    {
+      $inc: {
+        "variantFormArray.$[e1].variantQuantity": qty,
+      }
+    },
+    {
+      arrayFilters: [{ "e1.variantSku": sku }],
+    }
+  ).exec();
 }

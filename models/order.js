@@ -65,13 +65,8 @@ const schema = new Schema(
       required: false,
     },
     orderStatusTimeline: [subSchema.orderStatus],
-    comments: [
-      {
-        type: String,
-        required: false,
-      },
-    ],
-    subTotal: {
+    comments: [subSchema.comment],
+    totalAmount: {
       type: Number,
       required: true,
     },
@@ -102,7 +97,11 @@ const schema = new Schema(
     paidAmount : {
       type: Number,
       required: true
-    }
+    },
+    adjustmentAmount : {
+      type: Number,
+      required: false
+    },
   },
   {
     timestamps: true,
