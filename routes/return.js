@@ -15,7 +15,7 @@ const router = express.Router();
 // CREATE
 router.post('/place-return', controller.addReturn);
 // READ
-router.post('/get-all-returns-by-orderNo', checkAdminAuth, controller.getAllReturnsByOrderNo);
+router.get('/get-all-returns-by-orderNo/:id', checkAdminAuth, controller.getAllReturnsByOrderNo);
 router.get('/get-all-returns-by-invoiceId/:id', checkAdminAuth, controller.getAllReturnsByInvoiceId);
 router.post('/get-all-returns', checkAdminAuth, controller.getAllReturns);
 router.post('/get-return-by-search', checkAdminAuth, controller.getBySearch);

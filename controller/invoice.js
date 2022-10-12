@@ -1,7 +1,10 @@
 const { validationResult } = require("express-validator");
 const UniqueId = require("../models/unique-id");
 const Invoice = require("../models/invoice");
+const Product = require("../models/product");
 const Order = require("../models/order");
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
 
 exports.addInvoice = async (req, res, next) => {
 
@@ -18,6 +21,7 @@ exports.addInvoice = async (req, res, next) => {
   }
 
   try {
+
     // Increment Order Id Unique
     const incInvoice = await UniqueId.findOneAndUpdate(
       {},
@@ -26,15 +30,13 @@ exports.addInvoice = async (req, res, next) => {
     );
 
     const invoiceIdUnique = padLeadingZeros(incInvoice.invoiceId);
-    const finalData = { ...req.body, ...{ invoiceId: invoiceIdUnique } };
+    let invoiceData = req.body;
+    const finalData = { ...invoiceData, ...{ invoiceId: invoiceIdUnique } };
     const invoice = new Invoice(finalData);
     const invoiceSave = await invoice.save();
 
-    console.log(finalData);
-
-    const orderData = await Order.find({ orderId: finalData.orderNumber });
-    console.log(orderData);
-    console.log(orderData[0].orderedItems);
+    // console.log(orderData);
+    // console.log(orderData[0].orderedItems);
 
     for (let i = 0; i < finalData.products.length; i++) {
       await Order.findOneAndUpdate(
@@ -42,6 +44,9 @@ exports.addInvoice = async (req, res, next) => {
         {
           $inc: {
             "orderedItems.$[e1].invoicedQuantity": finalData.products[i].quantity,
+          },
+          $set: {
+            "orderedItems.$[e1].deliveryStatus": 3,
           }
         },
         {
@@ -50,6 +55,34 @@ exports.addInvoice = async (req, res, next) => {
           ],
         }
       );
+
+
+      let id = invoiceData.products[i].productId;          
+      let qty = finalData.products[i].quantity;
+      let hasVariant = finalData.products[i].hasVariant;
+
+      await Product.findOneAndUpdate(
+        { _id : id },
+        {
+          $inc: {
+            committedQuantity: -qty,
+          }
+        });
+  
+      if(hasVariant){
+        await Product.findOneAndUpdate(
+          { slug : slug},
+          {
+            $inc: {
+              "variantFormArray.$[e1].variantCommittedQuantity": -qty,
+            }
+          },
+          {
+            arrayFilters: [
+              { "e1.variantSku": data.sku },
+            ],
+          });
+      }
     }
 
 
@@ -73,8 +106,7 @@ exports.getAllInvoicesByOrderNo = async (req, res, next) => {
 
   try {
 
-    const orderNo = req.body.data;
-    console.log(orderNo);
+    const orderNo = req.params.id;
     const data = await Invoice.find({ orderNumber: orderNo });
 
     res.json({
@@ -114,7 +146,7 @@ exports.getAllInvoices = async (req, res, next) => {
 
     // Sort
     if (sort) {
-      queryDoc = queryDoc.sort(sort);
+      queryDoc = queryDoc.sort(sort); 
     }
 
     console.log(paginate);

@@ -2,13 +2,18 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const schema = new Schema({
+    _id: {
+        type: Schema.Types.ObjectId,
+        required: false
+    },
     name: {
         type: String,
         required: true
     },
     slug: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
     brand: {
         type: Schema.Types.ObjectId,

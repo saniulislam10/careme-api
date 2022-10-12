@@ -102,7 +102,7 @@ exports.getAllReturnsByOrderNo = async (req, res, next) => {
 
   try {
 
-    const orderNo = req.body.data;
+    const orderNo = req.params.id;
 
     const data = await Return.find({ orderNumber: orderNo });
 

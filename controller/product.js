@@ -647,28 +647,26 @@ exports.updateMultipleProductById = async (req, res, next) => {
 
 exports.updateProductQuantityById = async (req, res, next) => {
   const data = req.body;
+  let qty = data.quantity;
   try {
-    const tempProduct = await Product.findOne({'_id': data.product._id})
-
-    const variantData = tempProduct.variantFormArray.filter(f=> {
-      if(f.variantSku===data.sku){
-        return f
-      }
-    })[0]
-
-    console.log("this is v",variantData)
-    console.log("this is v",data.tempQuantity)
-    
-    if(variantData.variantQuantity<=0 && data.tempQuantity<0 ){
-      data.tempQuantity=0
-    }
+    const tempProduct = await Product.findOne({'_id': data.productId._id})
 
     await Product.findOneAndUpdate(
-        { _id: data.product._id },
+      { _id: data.productId._id },
+      {
+        $inc: {
+          quantity: qty,
+          committedQuantity: -qty,
+        }
+      });
+
+    if(tempProduct.hasVariant){
+      await Product.findOneAndUpdate(
+        { _id: data.productId._id },
         {
           $inc: {
-            "variantFormArray.$[e1].variantQuantity": parseInt(data.tempQuantity),
-            //quantity: data.quantity
+            "variantFormArray.$[e1].variantQuantity": qty,
+            "variantFormArray.$[e1].variantCommittedQuantity": -qty,
           }
         },
         {
@@ -676,6 +674,9 @@ exports.updateProductQuantityById = async (req, res, next) => {
             { "e1.variantSku": data.sku },
           ],
         });
+    }
+
+    
       
     res.status(200).json({
       message: "Product Quantity Updated Successfully!",
