@@ -22,6 +22,7 @@ router.get('/get-all-invoices-by-orderNo/:id', controller.getAllInvoicesByOrderN
 router.post('/get-all-invoices', checkAdminAuth, controller.getAllInvoices);
 router.post('/get-invoices-by-search', checkAdminAuth, controller.getInvoicesBySearch);
 router.get('/get-invoice-by-id/:id', checkAdminAuth, controller.getInvoiceById);
+router.post('/update-invoice-by-id', checkAdminAuth, controller.updateInvoiceById);
 
 
 // Export router class..

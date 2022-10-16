@@ -32,7 +32,10 @@ router.post('/get-add-by-link-products-by-dynamic-sort', controller.getAddByLink
 // UPDATE
 router.put('/edit-product-by-id', controller.updateProductById);
 router.post('/update-multiple-product-by-id',controller.updateMultipleProductById);
-router.post('/update-product-quantity-by-id',controller.updateProductQuantityById);
+router.post('/decrease-commited-product-quantity/:id',controller.decreaseCommittedProductQuantity);
+router.post('/increase-commited-product-quantity/:id',controller.increaseCommittedProductQuantity);
+router.post('/decrease-available-product-quantity/:id',controller.decreaseAvailableProductQuantity);
+router.post('/increase-available-product-quantity/:id',controller.increaseAvailableProductQuantity);
 
 // DELETE
 router.delete('/delete-product-by-id/:id', controller.deleteProductById);

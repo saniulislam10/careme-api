@@ -139,6 +139,7 @@ exports.getAllProducts = async (req, res, next) => {
   try {
     let paginate = req.body.paginate;
     let filter = req.body.filter;
+    let sort = req.body.sort;
 
     let queryData;
     let dataCount;
@@ -147,6 +148,12 @@ exports.getAllProducts = async (req, res, next) => {
       queryData = Product.find(filter);
     } else {
       queryData = Product.find();
+    }
+
+    if(sort){
+      queryData.sort(sort);
+    }else{
+      queryData.sort({ createdAt: -1 });
     }
 
     if (paginate) {
@@ -164,7 +171,7 @@ exports.getAllProducts = async (req, res, next) => {
     .populate("brand")
     .populate("vendor")
     .populate("variantFormArray.variantVendorName")
-    .sort({ createdAt: -1 });
+    
 
     if (filter) {
       dataCount = await Product.countDocuments(filter);
@@ -425,9 +432,9 @@ exports.updateProductById = async (req, res, next) => {
 
 exports.getProductsBySearch = async (req, res, next) => {
   try {
+    
     // Query Text
     let search = req.query.q;
-
     // Additional Filter
     const filter = req.body.filter;
 
@@ -480,7 +487,7 @@ exports.getProductsBySearch = async (req, res, next) => {
           { $and: queryArray },
           { $and: queryArray2 },
           {$and: queryArray3},
-          // {$and: queryArray4},
+          {$and: queryArray4},
         ],
       })
 
@@ -645,33 +652,176 @@ exports.updateMultipleProductById = async (req, res, next) => {
   }
 };
 
-exports.updateProductQuantityById = async (req, res, next) => {
-  const data = req.body;
+exports.decreaseCommittedProductQuantity = async (req, res, next) => {
+  const id = req.params.id;
+  let data = req.body.data;
   let qty = data.quantity;
+  let sku = data.sku;
+
+  console.log("Id",id);
+  console.log("qty",qty);
+  console.log("sku",sku);
+
   try {
-    const tempProduct = await Product.findOne({'_id': data.productId._id})
+    const tempProduct = await Product.findOne({'_id': id})
 
     await Product.findOneAndUpdate(
-      { _id: data.productId._id },
+      { _id: id },
       {
         $inc: {
-          quantity: qty,
+          // quantity: qty,
           committedQuantity: -qty,
         }
       });
 
     if(tempProduct.hasVariant){
       await Product.findOneAndUpdate(
-        { _id: data.productId._id },
+        { _id: id },
         {
           $inc: {
-            "variantFormArray.$[e1].variantQuantity": qty,
+            // "variantFormArray.$[e1].variantQuantity": qty,
             "variantFormArray.$[e1].variantCommittedQuantity": -qty,
           }
         },
         {
           arrayFilters: [
-            { "e1.variantSku": data.sku },
+            { "e1.variantSku": sku },
+          ],
+        });
+    }
+
+    
+      
+    res.status(200).json({
+      message: "Product Quantity Updated Successfully!",
+    });
+  } catch (err) {
+    console.log(err);
+    if (!err.statusCode) {
+      err.statusCode = 500;
+      err.message = "Something went wrong on database operation!";
+    }
+    next(err);
+  }
+};
+exports.increaseCommittedProductQuantity = async (req, res, next) => {
+  const id = req.params.id;
+  let data = req.body.data;
+  let qty = data.quantity;
+  let sku = data.sku;
+  try {
+    const tempProduct = await Product.findOne({'_id': id})
+
+    await Product.findOneAndUpdate(
+      { _id: id },
+      {
+        $inc: {
+          committedQuantity: qty,
+        }
+      });
+
+    if(tempProduct.hasVariant){
+      await Product.findOneAndUpdate(
+        { _id: id },
+        {
+          $inc: {
+            "variantFormArray.$[e1].variantCommittedQuantity": +qty,
+          }
+        },
+        {
+          arrayFilters: [
+            { "e1.variantSku": sku },
+          ],
+        });
+    }
+
+    
+      
+    res.status(200).json({
+      message: "Product Quantity Updated Successfully!",
+    });
+  } catch (err) {
+    console.log(err);
+    if (!err.statusCode) {
+      err.statusCode = 500;
+      err.message = "Something went wrong on database operation!";
+    }
+    next(err);
+  }
+};
+exports.decreaseAvailableProductQuantity = async (req, res, next) => {
+  const data = req.body.data;
+  const id = req.params.id;
+  let qty = data.quantity;
+  let sku = data.sku;
+
+  try {
+    const tempProduct = await Product.findOne({'_id': id})
+
+    await Product.findOneAndUpdate(
+      { _id: id },
+      {
+        $inc: {
+          quantity: -qty,
+        }
+      });
+
+    if(tempProduct.hasVariant){
+      await Product.findOneAndUpdate(
+        { _id: id },
+        {
+          $inc: {
+            "variantFormArray.$[e1].variantQuantity": -qty,
+          }
+        },
+        {
+          arrayFilters: [
+            { "e1.variantSku": sku },
+          ],
+        });
+    }
+
+    
+      
+    res.status(200).json({
+      message: "Product Quantity Updated Successfully!",
+    });
+  } catch (err) {
+    console.log(err);
+    if (!err.statusCode) {
+      err.statusCode = 500;
+      err.message = "Something went wrong on database operation!";
+    }
+    next(err);
+  }
+};
+exports.increaseAvailableProductQuantity = async (req, res, next) => {
+  const id = req.params.id;
+  const data = req.body.data;
+  let qty = data.quantity;
+  let sku = data.sku;
+  try {
+    const tempProduct = await Product.findOne({'_id': id})
+
+    await Product.findOneAndUpdate(
+      { _id: id },
+      {
+        $inc: {
+          quantity: qty,
+        }
+      });
+
+    if(tempProduct.hasVariant){
+      await Product.findOneAndUpdate(
+        { _id: id },
+        {
+          $inc: {
+            "variantFormArray.$[e1].variantQuantity": qty,
+          }
+        },
+        {
+          arrayFilters: [
+            { "e1.variantSku": sku },
           ],
         });
     }

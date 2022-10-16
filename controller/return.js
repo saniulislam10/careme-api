@@ -72,6 +72,10 @@ exports.addReturn = async (req, res, next) => {
         {
           $inc: {
             "products.$[e1].returnedQuantity": finalData.products[i].quantity,
+          },
+          $set: {
+            "deliveryStatus": 6,
+            "products.$[e1].deliveryStatus": 6,
           }
         },
         {
@@ -287,7 +291,7 @@ exports.getReturnById = async (req, res, next) => {
   try {
 
     const id = req.params.id;
-    const data = await Return.findOne({ _id: id });
+    const data = await Return.findOne({ returnId: id });
 
     res.json({
       data: data,
@@ -331,15 +335,23 @@ exports.recieveReturnById = async (req, res, next) => {
 
     const id = req.params.id;
     const data = req.body;
-    await Return.findOneAndUpdate({ _id: id }, { $set: data });
+    const invoiceId = data.invoiceId;
 
-    console.log(data.recievedQuantity);
+    console.log("Invoice", invoiceId);
+
+    await Invoice.findOneAndUpdate({ invoiceId: invoiceId}, {
+      $set : {
+        deliveryStatus: 7
+      }
+    })
+
+    await Return.findOneAndUpdate({ _id: id }, { $set: data });
 
     data.products.forEach(m => { incQtySku(m.sku, m.recievedQty) });
 
-    if (data.recievedQuantity) {
-
-    }
+    // if (data.recievedQuantity) {
+    //   console.log(data.recievedQuantity);
+    // }
 
     res.json({
       success: true,

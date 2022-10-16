@@ -39,39 +39,50 @@ exports.addInvoice = async (req, res, next) => {
     // console.log(orderData[0].orderedItems);
 
     for (let i = 0; i < finalData.products.length; i++) {
+      let data = finalData.products[i];
+      let status = 3;
+      let invQty = data.quantity;
+      let totalInvQty = invQty + data.invoicedQuantity;
+      let totalOrderQty = data.totalOrderQty;
+      if (totalInvQty === totalOrderQty) {
+        status = 4;
+      }
+      console.log("Total qty",totalOrderQty);
+      console.log("Invoice qty",invQty);
       await Order.findOneAndUpdate(
         { orderId: finalData.orderNumber },
         {
           $inc: {
-            "orderedItems.$[e1].invoicedQuantity": finalData.products[i].quantity,
+            "orderedItems.$[e1].invoicedQuantity": invQty,
           },
           $set: {
-            "orderedItems.$[e1].deliveryStatus": 3,
+            "orderedItems.$[e1].deliveryStatus": status,
           }
         },
         {
           arrayFilters: [
-            { "e1.sku": finalData.products[i].sku },
+            { "e1.sku": data.sku },
           ],
         }
       );
 
 
-      let id = invoiceData.products[i].productId;          
+      let id = invoiceData.products[i].productId;
       let qty = finalData.products[i].quantity;
-      let hasVariant = finalData.products[i].hasVariant;
+      let variant = finalData.products[i].variant;
+      let sku = finalData.products[i].sku;
 
       await Product.findOneAndUpdate(
-        { _id : id },
+        { _id: id },
         {
           $inc: {
             committedQuantity: -qty,
           }
         });
-  
-      if(hasVariant){
+
+      if (variant) {
         await Product.findOneAndUpdate(
-          { slug : slug},
+          { _id: id },
           {
             $inc: {
               "variantFormArray.$[e1].variantCommittedQuantity": -qty,
@@ -79,7 +90,7 @@ exports.addInvoice = async (req, res, next) => {
           },
           {
             arrayFilters: [
-              { "e1.variantSku": data.sku },
+              { "e1.variantSku": sku },
             ],
           });
       }
@@ -146,7 +157,7 @@ exports.getAllInvoices = async (req, res, next) => {
 
     // Sort
     if (sort) {
-      queryDoc = queryDoc.sort(sort); 
+      queryDoc = queryDoc.sort(sort);
     }
 
     console.log(paginate);
@@ -183,12 +194,32 @@ exports.getInvoiceById = async (req, res, next) => {
   try {
 
     const id = req.params.id;
-    const data = await Invoice.findOne({ _id: id });
+    const data = await Invoice.findOne({ invoiceId: id });
 
     res.json({
       data: data,
       success: true,
       message: "All Invoice fetched successfully",
+    });
+  } catch (err) {
+    console.log(err);
+    if (!err.statusCode) {
+      err.statusCode = 500;
+      err.message = "Something went wrong on database operation!";
+    }
+    next(err);
+  }
+};
+exports.updateInvoiceById = async (req, res, next) => {
+
+  try {
+
+    const updatedData = req.body;
+    await Invoice.updateOne({_id: updatedData._id}, {$set: updatedData})
+
+    res.json({
+      message: "Invoice updated successfully",
+      success: true,
     });
   } catch (err) {
     console.log(err);
@@ -218,7 +249,7 @@ exports.getInvoicesBySearch = async (req, res, next) => {
     const newQuery = search.split(/[ ,]+/);
     const queryArray = newQuery.map((str) => ({ invoiceId: RegExp(str, "i") }));
     const queryArray2 = newQuery.map((str) => ({ orderNumber: RegExp(str, "i") }));
-    const queryArray3 = newQuery.map((str) => ({ customerName: RegExp(str, 'i')}));
+    const queryArray3 = newQuery.map((str) => ({ customerName: RegExp(str, 'i') }));
     // const queryArray4 = newQuery.map((str) => ({username: RegExp(str, 'i')}));
     // const regex = new RegExp(query, 'i')
 
@@ -273,7 +304,7 @@ exports.getInvoicesBySearch = async (req, res, next) => {
       });
     }
 
-    if(sort){
+    if (sort) {
       dataDoc = dataDoc.sort(sort);
     }
 
