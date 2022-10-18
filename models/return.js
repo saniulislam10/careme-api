@@ -40,6 +40,10 @@ const schema = new Schema(
             type: Number,
             required: false
         },
+        deliveryStatus: {
+            type: Number,
+            required: false
+        },
         total: {
             type: Number,
             required: false

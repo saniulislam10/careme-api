@@ -341,7 +341,7 @@ exports.recieveReturnById = async (req, res, next) => {
 
     await Invoice.findOneAndUpdate({ invoiceId: invoiceId}, {
       $set : {
-        deliveryStatus: 7
+        deliveryStatus: data.deliveryStatus
       }
     })
 

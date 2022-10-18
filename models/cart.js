@@ -61,6 +61,10 @@ const schema = new Schema(
         deliveryDateTo: {
             type: String,
             required: false
+        },
+        vendor : {
+            type: String,
+            required: false 
         }
     },
     {

@@ -377,20 +377,20 @@ exports.placeOrder = async (req, res, next) => {
           $set: { carts: [] },
           $push: { checkouts: orderSave._id },
           $inc: {
-            redeemedPoints: orderData.redeemAmount,
-            points: -orderData.redeemAmount,
+            redeemedPoints: orderData.redeemedPoints,
+            points: -orderData.redeemedPoints,
           },
         }
       );
-    } else if (orderData.earnAmount > 0) {
+    } else if (orderData.earnedPoints > 0) {
       await User.findOneAndUpdate(
         { _id: userId },
         {
           $set: { carts: [] },
           $push: { checkouts: orderSave._id },
           $inc: {
-            points: orderData.earnAmount,
-            earnedPoints: orderData.earnAmount,
+            points: orderData.earnedPoints,
+            earnedPoints: orderData.earnedPoints,
           },
         }
       );
