@@ -9,6 +9,10 @@ const addressSchema = new Schema(
             ref: 'User',
             required: true
         },
+        name: {
+            type: String,
+            required: true
+        },
         phone: {
             type: String,
             required: true
