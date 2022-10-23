@@ -66,7 +66,6 @@ exports.editVariantInCart = async (req, res, next) => {
   try {
 
     const product = await Product.findOne({_id: data.productId})
-    console.log(data.productId)
     let Vindex;
     product.variantFormArray.map((q, index) => {
       if (q.variantSku == data.variant.variantSku) {
@@ -80,8 +79,6 @@ exports.editVariantInCart = async (req, res, next) => {
     let updatedVariant = [];
     updatedVariant[0] = data.variant;
     updatedVariant[0].variant = v
-
-    console.log(data.id)
     await Cart.findOneAndUpdate(
       { _id: data.id },
       {
@@ -128,7 +125,6 @@ exports.getCartItemByUserId = async (req, res, next) => {
 
 exports.getCartItemTypeByUserId = async (req, res, next) => {
   const userId = req.userData.userId;
-  console.log('user id : ', userId);
 
   try {
     const data = await User.findOne({ _id: userId })

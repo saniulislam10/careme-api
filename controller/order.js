@@ -699,7 +699,7 @@ exports.getOrderDetailsById = async (req, res, next) => {
         path: "orderedItems.productId",
         model: "Product",
         select:
-          "name slug sellingPrice medias images sku status vendor variants options variantFormArray variantDataArray",
+          "name slug sellingPrice medias images sku status vendor variants options variantFormArray variantDataArray canReturn returnPeriod",
       })
       .populate("userId");
 

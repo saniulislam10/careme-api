@@ -125,7 +125,6 @@ exports.getAll = async (req, res, next) => {
 
 exports.getBySearch = async (req, res, next) => {
   try {
-    console.log("Searching");
     // Query Text
     let search = req.query.q;
     // Pagination
@@ -135,9 +134,6 @@ exports.getBySearch = async (req, res, next) => {
     let sort = req.body.sort;
 
     let filter = req.body.filter;
-
-    console.log(search);
-    console.log(sort);
     // Build Regex Query
     const newQuery = search.split(/[ ,]+/);
     const queryArray = newQuery.map((str) => ({ purchaseId: RegExp(str, "i") }));
@@ -208,13 +204,10 @@ exports.updateById = async (req, res, next) => {
 };
 exports.updateRecieved = async (req, res, next) => {
   const data = req.body;
-  console.log(data);
   try {
     let purchaseData = await Model.findOne({ _id: data._id });
     purchaseData.products[data.index].recieved += data.recieved;
     purchaseData.products[data.index].message = data.message;
-
-    console.log(purchaseData.products[data.index].sku);
     await Model.findOneAndUpdate({ _id: data._id }, { $set: purchaseData });
     let id = data.productId;
     let recieved = data.recieved;

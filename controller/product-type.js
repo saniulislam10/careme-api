@@ -44,7 +44,6 @@ exports.getFilteredData = async (req, res, next) => {
         
         // Query Text
         const search = req.query.q;
-        console.log(search);
     
         // Additional Filter
         // const filter = {};
@@ -118,7 +117,6 @@ exports.deleteById = async (req, res, next) => {
   try {
 
       let id = req.params.id;
-      console.log(id);
       await ProductType.deleteOne({_id: id});
 
       res.status(200).json({

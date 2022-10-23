@@ -3,11 +3,9 @@ const request = require('request');
 
 exports.sendBulkSms = async (req, res, next) => {
     
-    console.log("bulk sms")
     try {
         const message = req.body.message;
         const phoneNo = req.body.phoneNo;
-        console.log(phoneNo);
         const url = 'http://66.45.237.70/api.php?username=' + process.env.bulkSmsUsername + '&password=' + process.env.bulkSmsPassword + '&number=' + phoneNo + '&message=' + message;
         // const url = 'http://66.45.237.70/maskingapi.php?username=' + process.env.bulkSmsUsername + '&password=' + process.env.bulkSmsPassword + '&number=' + phoneNo + '&message=' + message + '&senderid=' + process.env.bulkSmsSenderId;
         let result = '';
@@ -20,12 +18,10 @@ exports.sendBulkSms = async (req, res, next) => {
         };
         request(options, function (error, response) {
             if (error) {
-                console.log("Error", error)
                 result = error;
             }
             if (response && response.body) {
                 result = response.body;
-                console.log("Success", result);
             }
         });
 

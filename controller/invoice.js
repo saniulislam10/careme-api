@@ -47,8 +47,6 @@ exports.addInvoice = async (req, res, next) => {
       if (totalInvQty === totalOrderQty) {
         status = 4;
       }
-      console.log("Total qty",totalOrderQty);
-      console.log("Invoice qty",invQty);
       await Order.findOneAndUpdate(
         { orderId: finalData.orderNumber },
         {
@@ -159,8 +157,6 @@ exports.getAllInvoices = async (req, res, next) => {
     if (sort) {
       queryDoc = queryDoc.sort(sort);
     }
-
-    console.log(paginate);
     // Pagination
     if (paginate) {
       queryDoc
@@ -236,7 +232,6 @@ exports.getInvoicesBySearch = async (req, res, next) => {
     // Query Text
     const search = req.query.q;
 
-    console.log(search);
     // Additional Filter
     const filter = req.body.filter;
     const sort = req.body.sort;
@@ -315,8 +310,6 @@ exports.getInvoicesBySearch = async (req, res, next) => {
 
     const results = await dataDoc;
     const count = await countDoc;
-
-    console.log(results);
 
     res.status(200).json({
       data: results,

@@ -7,7 +7,6 @@ const schedule = require('node-schedule');
 exports.addSingleProduct = async (req, res, next) => {
   try {
     const data = req.body;
-    console.log(data)
     const dataExists = await Product.findOne({ slug: data.slug }).lean();
     const skuExists = await Product.findOne({ sku: data.sku }).lean();
 
@@ -121,7 +120,6 @@ exports.deleteProductById = async (req, res, next) => {
     const job = schedule.scheduleJob(date, async () => {
       await ArchivedProduct.deleteOne({sku: data.sku});
     });
-    console.log("timing");
     res.status(200).json({
       message: "Product deleted Successfully!",
     });
@@ -657,10 +655,6 @@ exports.decreaseCommittedProductQuantity = async (req, res, next) => {
   let data = req.body.data;
   let qty = data.quantity;
   let sku = data.sku;
-
-  console.log("Id",id);
-  console.log("qty",qty);
-  console.log("sku",sku);
 
   try {
     const tempProduct = await Product.findOne({'_id': id})

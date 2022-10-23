@@ -547,7 +547,6 @@ exports.deleteAdminRoleById = async (req, res, next) => {
 
         // Filter
         if (filter) {
-            console.log("filter",filter);
             queryDoc = User.find(filter);
             countDoc = User.countDocuments(filter);
         } else {
@@ -577,8 +576,6 @@ exports.deleteAdminRoleById = async (req, res, next) => {
         .populate({
             path: 'checkouts',
         });
-
-        console.log(data);
 
         const count = await countDoc;
 

@@ -54,10 +54,7 @@ exports.getAll = async (req, res, next) => {
 exports.getBySearch = async (req, res, next) => {
     try {
       // Query Text
-      console.log("Searching");
       const search = req.query.q;
-  
-      console.log(search);
       // Additional Filter
       const filter = req.body.filter;
       const sort = req.body.sort;
@@ -137,8 +134,6 @@ exports.getBySearch = async (req, res, next) => {
       const results = await dataDoc;
       const count = await countDoc;
   
-      console.log(results);
-  
       res.status(200).json({
         data: results,
         count: count,
@@ -158,7 +153,6 @@ exports.getFilteredData = async (req, res, next) => {
 
         // Query Text
         const search = req.query.q;
-        console.log(search);
 
         // Additional Filter
         // const filter = {};
@@ -193,7 +187,6 @@ exports.getFilteredData = async (req, res, next) => {
         }
 
         const results = await dataDoc;
-        console.log(results);
         res.status(200).json({
             data: results
         });
@@ -231,7 +224,6 @@ exports.getByReturnId = async (req, res, next) => {
     try {
 
         let returnId = req.params.id;
-        console.log(returnId);
         // const data = Refund.findOne({ returnId: returnId });
 
         res.status(200).json({
@@ -251,7 +243,6 @@ exports.deleteById = async (req, res, next) => {
     try {
 
         let id = req.params.id;
-        console.log(id);
         await Refund.deleteOne({ _id: id });
 
         res.status(200).json({

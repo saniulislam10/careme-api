@@ -44,7 +44,6 @@ exports.getFilteredData = async (req, res, next) => {
         
         // Query Text
         const search = req.query.q;
-        console.log(search);
     
         // Additional Filter
         // const filter = {};
@@ -79,7 +78,6 @@ exports.getFilteredData = async (req, res, next) => {
         }
     
         const results = await dataDoc;
-        console.log(results);
         res.status(200).json({
           data: results
         });

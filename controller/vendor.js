@@ -25,7 +25,6 @@ exports.getFilteredData = async (req, res, next) => {
     try {
         // Query Text
         const search = req.query.q;
-        console.log(search);
     
         // Additional Filter
         const filter = { role: 'VENDOR'};
@@ -68,7 +67,6 @@ exports.getFilteredData = async (req, res, next) => {
         }
     
         const results = await dataDoc;
-        console.log(results);
         res.status(200).json({
           data: results
         });

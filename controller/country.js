@@ -2,23 +2,23 @@
 const Country = require('../models/country');
 
 exports.add = async (req, res, next) => {
-  try {
+    try {
 
-      let data = req.body;
-      let country = new Country(data);
-      await country.save();
+        let data = req.body;
+        let country = new Country(data);
+        await country.save();
 
-      res.status(200).json({
-          message: "Country added successfully",
-      });
-  } catch (err) {
-      console.log(err);
-      if (!err.statusCode) {
-          err.statusCode = 500;
-          err.message = "Something went wrong on database operation!";
-      }
-      next(err);
-  }
+        res.status(200).json({
+            message: "Country added successfully",
+        });
+    } catch (err) {
+        console.log(err);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+            err.message = "Something went wrong on database operation!";
+        }
+        next(err);
+    }
 };
 
 exports.getAll = async (req, res, next) => {
@@ -41,48 +41,44 @@ exports.getAll = async (req, res, next) => {
 };
 exports.getFilteredData = async (req, res, next) => {
     try {
-        
-      console.log("Hello World")
         // Query Text
         const search = req.query.q;
-        console.log(search);
-    
+
         // Additional Filter
         // const filter = {};
-    
+
         // Pagination
         const pageSize = +req.query.pageSize;
         const currentPage = +req.query.currentPage;
-    
+
         // Build Regex Query
         const newQuery = search.split(/[ ,]+/);
         const queryArray = newQuery.map((str) => ({ name: RegExp(str, "i") }));
         // const queryArray4 = newQuery.map((str) => ({username: RegExp(str, 'i')}));
         // const regex = new RegExp(query, 'i')
-    
+
         let dataDoc = Country.find({
             $and: [
-              {
-                $or: [
-                  { $and: queryArray },
-                  // {$and: queryArray4},
-                ],
-              },
+                {
+                    $or: [
+                        { $and: queryArray },
+                        // {$and: queryArray4},
+                    ],
+                },
             ],
-          });
-    
-        // {marketer: {$in: [null]}}
-    
-        if (pageSize && currentPage) {
-          dataDoc.skip(pageSize * (currentPage - 1)).limit(Number(pageSize));
-        }
-    
-        const results = await dataDoc;
-        console.log(results);
-        res.status(200).json({
-          data: results
         });
-      } catch (err) {
+
+        // {marketer: {$in: [null]}}
+
+        if (pageSize && currentPage) {
+            dataDoc.skip(pageSize * (currentPage - 1)).limit(Number(pageSize));
+        }
+
+        const results = await dataDoc;
+        res.status(200).json({
+            data: results
+        });
+    } catch (err) {
         console.log(err);
         if (!err.statusCode) {
             err.statusCode = 500;
@@ -96,9 +92,9 @@ exports.editById = async (req, res, next) => {
     try {
 
         let updatedData = req.body;
-        const data = Country.findOne({_id: updatedData._id});
-        const finalData = {...updatedData, ...{password: data.password}}
-        await Country.updateOne({_id: updatedData._id}, {$set: updatedData})
+        const data = Country.findOne({ _id: updatedData._id });
+        const finalData = { ...updatedData, ...{ password: data.password } }
+        await Country.updateOne({ _id: updatedData._id }, { $set: updatedData })
 
         res.status(200).json({
             message: "Country edited successfully",
@@ -114,21 +110,21 @@ exports.editById = async (req, res, next) => {
 };
 
 exports.deleteById = async (req, res, next) => {
-  try {
+    try {
 
-      let id = req.params.id;
-      await Country.deleteOne({_id: id});
+        let id = req.params.id;
+        await Country.deleteOne({ _id: id });
 
-      res.status(200).json({
-          message: "Country deleted successfully",
-      });
-  } catch (err) {
-      console.log(err);
-      if (!err.statusCode) {
-          err.statusCode = 500;
-          err.message = "Something went wrong on database operation!";
-      }
-      next(err);
-  }
+        res.status(200).json({
+            message: "Country deleted successfully",
+        });
+    } catch (err) {
+        console.log(err);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+            err.message = "Something went wrong on database operation!";
+        }
+        next(err);
+    }
 };
 

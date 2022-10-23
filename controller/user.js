@@ -29,8 +29,6 @@ const Coupon = require("../models/coupon");
         const bodyData = req.body;
         const query = {phoneNo: bodyData.phoneNo};
 
-        console.log('registration',bodyData);
-
         let token;
 
         const userExists = await User.findOne(query).lean();
@@ -232,7 +230,6 @@ exports.getLoginUserInfo = async (req, res, next) => {
 exports.editLoginUserInfo = async (req, res, next) => {
     try {
         const loginUserId = req.body._id;
-        console.log(loginUserId);
         await User.findOneAndUpdate(
             {_id: loginUserId},
             {$set: req.body}

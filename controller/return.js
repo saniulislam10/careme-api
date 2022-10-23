@@ -190,7 +190,6 @@ exports.getBySearch = async (req, res, next) => {
     // Query Text
     const search = req.query.q;
 
-    console.log(search);
     // Additional Filter
     const filter = req.body.filter;
     const sort = req.body.sort;
@@ -270,8 +269,6 @@ exports.getBySearch = async (req, res, next) => {
     const results = await dataDoc;
     const count = await countDoc;
 
-    console.log(results);
-
     res.status(200).json({
       data: results,
       count: count,
@@ -337,8 +334,6 @@ exports.recieveReturnById = async (req, res, next) => {
     const data = req.body;
     const invoiceId = data.invoiceId;
 
-    console.log("Invoice", invoiceId);
-
     await Invoice.findOneAndUpdate({ invoiceId: invoiceId}, {
       $set : {
         deliveryStatus: data.deliveryStatus
@@ -380,7 +375,6 @@ async function incQtySku(sku, qty) {
   if (sku) {
     mainSku = sku.split('-')[0];
   }
-  console.log(mainSku);
   await Product.findOneAndUpdate(
     { sku: mainSku },
     {

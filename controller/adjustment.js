@@ -17,7 +17,6 @@ exports.addSingle = async (req, res, next) => {
       ...adjustmentData,
       ...{ adjustmentId: adjustmentIdUnique },
     };
-    console.log(finalData);
       const adjustment = new Model(finalData);
       await adjustment.save();
       res.status(200).json({

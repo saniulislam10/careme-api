@@ -4,7 +4,6 @@ exports.updateStatus = async (req, res, next) => {
   try {
 
       let data = req.body;
-      console.log(data);
 
       res.status(200).json({
           message: "Status updated successfully",

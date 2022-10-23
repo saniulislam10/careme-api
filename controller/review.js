@@ -5,7 +5,6 @@ exports.add = async (req, res, next) => {
   try {
 
       let data = req.body;
-      console.log(data);
       let review = new Review(data);
       await review.save();
 
@@ -32,7 +31,6 @@ exports.getAll = async (req, res, next) => {
                 select: "fullName phoneNo"
             }
         )
-        console.log(data);
         res.status(200).json({
             data: data,
             message: "Reviews fetched successfully",
@@ -70,7 +68,6 @@ exports.getFilteredData = async (req, res, next) => {
         
         // Query Text
         const search = req.query.q;
-        console.log(search);
     
         // Additional Filter
         // const filter = {};
@@ -105,7 +102,6 @@ exports.getFilteredData = async (req, res, next) => {
         }
     
         const results = await dataDoc;
-        console.log(results);
         res.status(200).json({
           data: results
         });
