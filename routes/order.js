@@ -34,6 +34,7 @@ router.get("/get-single-order-by-user-admin/:orderId",checkIpWhitelist, checkAdm
 router.put('/cancel-order-by-user/:orderId', checkAuth, controller.cancelOrderByUser);
 router.post('/get-order-by-search', controller.getOrdersBySearch);
 router.put('/update-multiple-order-by-id', checkIpWhitelist,checkAdminAuth, controller.updateMultipleOrder);
+router.post('/pay-payment', checkAuth, controller.payPayment);
 
 
 /**

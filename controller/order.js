@@ -457,6 +457,62 @@ exports.updateOrder = async (req, res, next) => {
     next(err);
   }
 };
+exports.payPayment = async (req, res, next) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    const error = new Error(
+      "Input Validation Error! Please complete required information."
+    );
+    error.statusCode = 422;
+    error.data = errors.array();
+    next(error);
+    return;
+  }
+
+  try {
+    const orderData = req.body;
+    console.log(orderData);
+
+    orderId = orderData.orderId;
+    paidAmount = orderData.paidAmount;
+    paymentStatus =  orderData.paymentStatus;
+    selectedSkus = orderData.selectedSkus;
+
+    await Order.findOneAndUpdate(
+      { orderId: orderId },
+      {$inc: { paidAmount: paidAmount }},
+
+    )
+    for(let i=0; i < selectedSkus.length; i++ ){
+      await Order.findOneAndUpdate(
+        { orderId: orderId },
+        { 
+          $set: { 
+            "orderedItems.$[e1].paymentStatus": paymentStatus,
+          },
+        },{
+          arrayFilters: [
+            { "e1.sku": selectedSkus[i] },
+          ],
+        }
+      );
+    }
+    
+
+    res.json({
+      success: true,
+      message: "Payment paid successfully",
+    });
+  } catch (err) {
+    console.log(err);
+    if (!err.statusCode) {
+      err.statusCode = 500;
+      err.message = "Something went wrong on database operation!";
+    }
+    next(err);
+  }
+};
 
 
 exports.placeTempOrder = async (req, res, next) => {
