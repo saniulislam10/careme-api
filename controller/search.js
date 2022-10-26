@@ -22,8 +22,6 @@ exports.getProductFromAliexpress = async (req, res, next) => {
     await product.then((res) => {
       data = res;
     });
-
-    console.log(data);
     // refactoring according to product model
     data.name = data.title;
     data.sellingPrice = Math.round(data.salePrice.max);
@@ -1494,7 +1492,6 @@ exports.getProductFromEbay = async (req, res, next) => {
           specifications: specificationData,
         };
       }
-      console.log("Product Info", productInfo)
       res.status(200).json({
         data: productInfo,
         message: "All data fetch Successfully!",
@@ -1549,9 +1546,6 @@ exports.getProductFromWalmart = async (req, res, next) => {
         }
       })
 
-      console.log("Title", title);
-      console.log("Brand", brand);
-
       //DISCOUNTED PRICE
       const disPrice = await page.evaluate(() => {
         const element = document.querySelector("div.f6.gray.lh-title.mb3.dn.db-m > span > span:nth-child(2)");
@@ -1562,7 +1556,6 @@ exports.getProductFromWalmart = async (req, res, next) => {
         return null;
       });
       discountedPrice = disPrice.replace("$", "");
-      console.log("discountedPrice", discountedPrice);
 
       // // VARIANTS
       for (let i = 2; i <= 3; i++) {
@@ -1572,7 +1565,6 @@ exports.getProductFromWalmart = async (req, res, next) => {
             x => x.click()
           );
         })
-        console.log(variants.length);
 
         for (let x = 1; x < variants.length; x++) {
           await page.hover("#__next > div:nth-child(1) > div > div > div.flex-auto.relative.z-1 > div > section > main > div > div:nth-child(2) > div > div.w_CM.w_DL.w_CQ > div > div > div:nth-child(1) > div > div > div.relative > div:nth-child(" + i + ") > div.w-100.f6.mt2 > div.flex.flex-wrap.nl2 > button")
@@ -1598,8 +1590,6 @@ exports.getProductFromWalmart = async (req, res, next) => {
           values: values
         };
         variantDemo.push(varObj);
-
-        console.log(variant);
       }
 
 
@@ -1788,7 +1778,6 @@ exports.getAliexpressProductData = async (req, res, next) => {
             temp= options[i]+","+newOption;
             options[i] = temp;
           }
-          console.log(options[i]);
         }
       }
       let data = {
@@ -1826,7 +1815,6 @@ exports.getAmazonProductData = async (req, res, next) => {
 
   try {
     let productCode = req.params.id;
-    console.log(productCode);
     const params = {
       api_key: "E4991D6BCF4E4B0CBCD8E225C122A0CB",
         amazon_domain: "amazon.com",
@@ -1889,7 +1877,6 @@ exports.getAmazonIndiaProductData = async (req, res, next) => {
 
   try {
     let productCode = req.params.id;
-    console.log(productCode);
     const params = {
       api_key: "E4991D6BCF4E4B0CBCD8E225C122A0CB",
         amazon_domain: "amazon.in",

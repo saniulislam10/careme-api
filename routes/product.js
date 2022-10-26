@@ -22,6 +22,7 @@ router.post('/add-single-product', controller.addSingleProduct);
 router.get('/get-single-product-by-id/:id', controller.getSingleProductById);
 router.get('/get-single-product-by-slug/:slug', controller.getSingleProductBySlug);
 router.post('/get-all-products', controller.getAllProducts);
+router.post('/get-all-products-by-user', controller.getAllProductsByUser);
 router.post('/get-all-archived-products', controller.getAllArchivedProducts);
 router.post('/get-products-by-dynamic-sort', controller.getProductsByDynamicSort);
 router.post('/get-products-by-search',controller.getProductsBySearch)
@@ -39,6 +40,7 @@ router.post('/increase-available-product-quantity/:id',controller.increaseAvaila
 
 // DELETE
 router.delete('/delete-product-by-id/:id', controller.deleteProductById);
+router.post('/delete-many-products', controller.deleteMultipleProducts);
 
 
 // Export All router..

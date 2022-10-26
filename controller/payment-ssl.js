@@ -37,7 +37,6 @@ exports.init = async (req, res, next) => {
         const response = credential.init(data);
 
         response.then(function (result) {
-            console.log(result);
             res.status(200).json({
                 data: result,
                 message: 'Data received successfully!'

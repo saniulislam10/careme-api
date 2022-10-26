@@ -14,7 +14,7 @@ exports.addSingleProduct = async (req, res, next) => {
       const error = new Error("A product with this name/slug already exists");
       error.statusCode = 406;
       next(error);
-    } else if (skuExists){
+    } else if (skuExists) {
       const error = new Error("A product with this sku already exists");
       // error.message("A product with this sku already exists");
       error.statusCode = 406;
@@ -43,8 +43,8 @@ exports.getSingleProductById = async (req, res, next) => {
   try {
     const query = { _id: id };
     const data = await Product.findOne(query)
-    .populate('productType')
-    .populate("variantFormArray.variantVendorName");
+      .populate('productType')
+      .populate("variantFormArray.variantVendorName");
 
     res.status(200).json({
       data: data,
@@ -65,12 +65,11 @@ exports.getSingleProductBySlug = async (req, res, next) => {
   try {
     const query = { slug: slug };
     const data = await Product.findOne(query)
-    .populate('productType')
-    .populate("vendor")
-    .populate('brand')
-    .populate("variantFormArray.variantVendorName")
+      .populate('productType')
+      .populate("vendor")
+      .populate('brand')
+      .populate("variantFormArray.variantVendorName")
 
-    console.log(data);
     // .populate('attributes')
     // .populate('category')
     // .populate('subCategory');
@@ -96,6 +95,8 @@ exports.deleteProductById = async (req, res, next) => {
     let newData = {
       name: data.name,
       slug: data.slug,
+      sellingPrice: data.sellingPrice,
+      quantity: data.quantity,
       brand: data.brand,
       medias: data.medias,
       status: data.status,
@@ -111,15 +112,72 @@ exports.deleteProductById = async (req, res, next) => {
     const archievedProduct = new ArchivedProduct(newData);
     await archievedProduct.save();
 
-    
-    await Cart.deleteMany({product: id});
+
+    await Cart.deleteMany({ product: id });
 
     await Product.deleteOne(query);
     const date = new Date();
     date.setSeconds(date.getSeconds() + 60);
     const job = schedule.scheduleJob(date, async () => {
-      await ArchivedProduct.deleteOne({sku: data.sku});
+      await ArchivedProduct.deleteOne({ sku: data.sku });
     });
+    res.status(200).json({
+      message: "Product deleted Successfully!",
+    });
+  } catch (err) {
+    console.log(err);
+    if (!err.statusCode) {
+      err.statusCode = 500;
+      err.message = "Something went wrong on database operation!";
+    }
+    next(err);
+  }
+};
+exports.deleteMultipleProducts = async (req, res, next) => {
+  const id = req.params.id;
+  try {
+
+    const ids = req.body;
+    let skus = [];
+    ids.forEach(async (id) => {
+      const query = { _id: id };
+      const data = await Product.findById(id).select('-_id -createdAt -updatedAt -__v');
+      let newData = {
+        name: data.name,
+        slug: data.slug,
+        sellingPrice: data.sellingPrice,
+        quantity: data.quantity,
+        vendor: data.vendor,
+        brand: data.brand,
+        medias: data.medias,
+        status: data.status,
+        description: data.description,
+        images: data.images,
+        canPartialPayment: data.canPartialPayment,
+        canEarnPoints: data.canEarnPoints,
+        canRedeemPoints: data.canRedeemPoints,
+        sku: data.sku,
+        weight: data.weight,
+        sku: data.sku,
+      }
+      skus.push(data.sku);
+      const archievedProduct = new ArchivedProduct(newData);
+      await archievedProduct.save();
+      await Cart.deleteMany({ product: id });
+
+    });
+    await Product.deleteMany({ _id: ids });
+
+
+    const date = new Date();
+    date.setSeconds(date.getSeconds() + 60);
+    const job = schedule.scheduleJob(date, async () => {
+      await ArchivedProduct.deleteMany({ sku: skus });
+    });
+
+
+
+
     res.status(200).json({
       message: "Product deleted Successfully!",
     });
@@ -148,9 +206,9 @@ exports.getAllProducts = async (req, res, next) => {
       queryData = Product.find();
     }
 
-    if(sort){
+    if (sort) {
       queryData.sort(sort);
-    }else{
+    } else {
       queryData.sort({ createdAt: -1 });
     }
 
@@ -161,15 +219,72 @@ exports.getAllProducts = async (req, res, next) => {
     }
 
     const data = await queryData
-    .populate(
-      {
-        path : "productType"
-      }
-    )
-    .populate("brand")
-    .populate("vendor")
-    .populate("variantFormArray.variantVendorName")
-    
+      .populate(
+        {
+          path: "productType"
+        }
+      )
+      .populate("brand")
+      .populate("vendor")
+      .populate("variantFormArray.variantVendorName")
+
+
+    if (filter) {
+      dataCount = await Product.countDocuments(filter);
+    } else {
+      dataCount = await Product.countDocuments();
+    }
+
+    res.status(200).json({
+      data: data,
+      count: dataCount,
+    });
+  } catch (err) {
+    console.log(err);
+    if (!err.statusCode) {
+      err.statusCode = 500;
+      err.message = "Something went wrong on database operation!";
+    }
+    next(err);
+  }
+};
+exports.getAllProductsByUser = async (req, res, next) => {
+  try {
+    let paginate = req.body.paginate;
+    let filter = req.body.filter;
+    let sort = req.body.sort;
+
+    let queryData;
+    let dataCount;
+
+    if (filter) {
+      queryData = Product.find(filter);
+    } else {
+      queryData = Product.find();
+    }
+
+    if (sort) {
+      queryData.sort(sort);
+    } else {
+      queryData.sort({ createdAt: -1 });
+    }
+
+    if (paginate) {
+      queryData
+        .skip(Number(paginate.pageSize) * (Number(paginate.currentPage) - 1))
+        .limit(Number(paginate.pageSize));
+    }
+
+    const data = await queryData
+      .populate(
+        {
+          path: "productType"
+        }
+      )
+      .populate("brand")
+      .populate("vendor")
+      .populate("variantFormArray.variantVendorName")
+
 
     if (filter) {
       dataCount = await Product.countDocuments(filter);
@@ -195,64 +310,7 @@ exports.getAllProducts = async (req, res, next) => {
 exports.getAllArchivedProducts = async (req, res, next) => {
   try {
     let paginate = req.body.paginate;
-    let filter = req.body.filter;
-
-    let queryData;
-    let dataCount;
-
-    let priceRange = {
-      minPrice: 0,
-      maxPrice: 0,
-    };
-    let minPrice;
-    let maxPrice;
-
-    let type = "default";
-    let i = -1;
-
-    if (filter) {
-      if ("categorySlug" in filter) {
-        type = "cat";
-        i = index;
-      }
-      if ("subCategorySlug" in filter) {
-        type = "subCat";
-        i = index;
-      }
-      if ("tags" in filter) {
-        type = "tag";
-        i = index;
-      }
-
-      if (type == "cat") {
-        minPrice = ArchivedProduct.find(filter[i]).sort({ price: 1 }).limit(1);
-        maxPrice = ArchivedProduct.find(filter[i]).sort({ price: -1 }).limit(1);
-      } else if (type == "subCat") {
-        minPrice = ArchivedProduct.find(filter[i]).sort({ price: 1 }).limit(1);
-        maxPrice = ArchivedProduct.find(filter[i]).sort({ price: -1 }).limit(1);
-      } else if (type == "tag") {
-        minPrice = ArchivedProduct.find(filter[i]).sort({ price: 1 }).limit(1);
-        maxPrice = ArchivedProduct.find(filter[i]).sort({ price: -1 }).limit(1);
-      } else {
-        minPrice = ArchivedProduct.find().sort({ price: 1 }).limit(1);
-        maxPrice = ArchivedProduct.find().sort({ price: -1 }).limit(1);
-      }
-    } else {
-      minPrice = ArchivedProduct.find().sort({ price: 1 }).limit(1);
-      maxPrice = ArchivedProduct.find().sort({ price: -1 }).limit(1);
-    }
-
-    const temp1 = await minPrice;
-    const temp2 = await maxPrice;
-
-    priceRange.minPrice = temp1.length > 0 ? temp1[0].price : 0;
-    priceRange.maxPrice = temp2.length > 0 ? temp2[0].price : 0;
-
-    if (filter) {
-      queryData = ArchivedProduct.find(filter);
-    } else {
-      queryData = ArchivedProduct.find();
-    }
+    let queryData = ArchivedProduct.find();
 
     if (paginate) {
       queryData
@@ -261,26 +319,17 @@ exports.getAllArchivedProducts = async (req, res, next) => {
     }
 
     const data = await queryData
-    .populate('productType')
-    .populate("vendor")
-    .populate('brand')
-    .populate("variantFormArray.variantVendorName")
-      // .populate('attributes')
-      // .populate('category')
-      // .populate('subCategory')
-      // .populate('tags')
+      .populate("vendor")
+      .populate('brand')
+      .populate("variantFormArray.variantVendorName")
       .sort({ createdAt: -1 });
 
-    if (filter) {
-      dataCount = await ArchivedProduct.countDocuments(filter);
-    } else {
-      dataCount = await ArchivedProduct.countDocuments();
-    }
+    dataCount = await ArchivedProduct.countDocuments();
 
     res.status(200).json({
       data: data,
-      priceRange: priceRange,
       count: dataCount,
+      message: "Archieved Products Fetched Successfully"
     });
   } catch (err) {
     console.log(err);
@@ -299,7 +348,7 @@ exports.getProductsByDynamicSort = async (req, res, next) => {
     let filter = req.body.filter;
     let sort = req.body.sort;
     let select = req.body.select;
-    
+
 
 
     let queryDoc;
@@ -314,8 +363,8 @@ exports.getProductsByDynamicSort = async (req, res, next) => {
     // Sort
     if (sort) {
       queryDoc = queryDoc.sort(sort);
-    }else{
-      queryDoc = queryDoc.sort({createdAt : -1});
+    } else {
+      queryDoc = queryDoc.sort({ createdAt: -1 });
     }
 
     // Pagination
@@ -330,9 +379,9 @@ exports.getProductsByDynamicSort = async (req, res, next) => {
     }
 
     const data = await queryDoc
-    .populate("brand")
-    .populate("vendor")
-    .populate("variantFormArray.variantVendorName")
+      .populate("brand")
+      .populate("vendor")
+      .populate("variantFormArray.variantVendorName")
     const count = await Product.countDocuments({ hasLink: false });
 
     res.status(200).json({
@@ -388,8 +437,8 @@ exports.getAddByLinkProductsByDynamicSort = async (req, res, next) => {
       // .populate('attributes')
       .populate('brand')
       .populate('productType')
-    .populate("vendor")
-    .populate("variantFormArray.variantVendorName")
+      .populate("vendor")
+      .populate("variantFormArray.variantVendorName")
       .sort({ createdAt: -1 });
     // .populate('subCategory')
     // .populate('tags');
@@ -430,7 +479,7 @@ exports.updateProductById = async (req, res, next) => {
 
 exports.getProductsBySearch = async (req, res, next) => {
   try {
-    
+
     // Query Text
     let search = req.query.q;
     // Additional Filter
@@ -444,8 +493,8 @@ exports.getProductsBySearch = async (req, res, next) => {
     const newQuery = search.split(/[ ,]+/);
     const queryArray = newQuery.map((str) => ({ name: RegExp(str, "i") }));
     const queryArray2 = newQuery.map((str) => ({ sku: RegExp(str, "i") }));
-    const queryArray3 = newQuery.map((str) => ({link: RegExp(str, 'i')}));
-    const queryArray4 = newQuery.map((str) => ({variantFormArray: { $elemMatch: { variantSku: str }}}));
+    const queryArray3 = newQuery.map((str) => ({ link: RegExp(str, 'i') }));
+    const queryArray4 = newQuery.map((str) => ({ variantFormArray: { $elemMatch: { variantSku: str } } }));
     // const regex = new RegExp(query, 'i')
 
     let dataDoc;
@@ -473,8 +522,8 @@ exports.getProductsBySearch = async (req, res, next) => {
             $or: [
               { $and: queryArray },
               { $and: queryArray2 },
-              {$and: queryArray3},
-              {$and: queryArray4},
+              { $and: queryArray3 },
+              { $and: queryArray4 },
             ],
           },
         ],
@@ -484,8 +533,8 @@ exports.getProductsBySearch = async (req, res, next) => {
         $or: [
           { $and: queryArray },
           { $and: queryArray2 },
-          {$and: queryArray3},
-          {$and: queryArray4},
+          { $and: queryArray3 },
+          { $and: queryArray4 },
         ],
       })
 
@@ -493,8 +542,8 @@ exports.getProductsBySearch = async (req, res, next) => {
         $or: [
           { $and: queryArray },
           { $and: queryArray2 },
-          {$and: queryArray3},
-          {$and: queryArray4},
+          { $and: queryArray3 },
+          { $and: queryArray4 },
         ],
       });
     }
@@ -506,13 +555,13 @@ exports.getProductsBySearch = async (req, res, next) => {
     }
 
     const results = await dataDoc
-    .populate('productType')
-    .populate("brand")
-    .populate("vendor")
-    .populate("variantFormArray.variantVendorName")
-    
+      .populate('productType')
+      .populate("brand")
+      .populate("vendor")
+      .populate("variantFormArray.variantVendorName")
+
     const count = await countDoc;
-    
+
     res.status(200).json({
       data: results,
       count: count,
@@ -549,7 +598,7 @@ exports.getProductsBySearchAdmin = async (req, res, next) => {
 
     let dataDoc;
     let countDoc;
-    
+
     if (filter) {
       dataDoc = Product.find({
         $and: [
@@ -601,17 +650,17 @@ exports.getProductsBySearchAdmin = async (req, res, next) => {
     // {marketer: {$in: [null]}}
 
     if (pageSize && currentPage) {
-      
+
       dataDoc.skip(pageSize * (currentPage - 1)).limit(Number(pageSize));
     }
 
     const results = await dataDoc
-    .populate("brand")
-    .populate('productType')
-    .populate("vendor")
-    .populate("variantFormArray.variantVendorName");
+      .populate("brand")
+      .populate('productType')
+      .populate("vendor")
+      .populate("variantFormArray.variantVendorName");
     const count = await countDoc;
-    
+
     res.status(200).json({
       data: results,
       count: count,
@@ -657,7 +706,7 @@ exports.decreaseCommittedProductQuantity = async (req, res, next) => {
   let sku = data.sku;
 
   try {
-    const tempProduct = await Product.findOne({'_id': id})
+    const tempProduct = await Product.findOne({ '_id': id })
 
     await Product.findOneAndUpdate(
       { _id: id },
@@ -668,7 +717,7 @@ exports.decreaseCommittedProductQuantity = async (req, res, next) => {
         }
       });
 
-    if(tempProduct.hasVariant){
+    if (tempProduct.hasVariant) {
       await Product.findOneAndUpdate(
         { _id: id },
         {
@@ -684,8 +733,8 @@ exports.decreaseCommittedProductQuantity = async (req, res, next) => {
         });
     }
 
-    
-      
+
+
     res.status(200).json({
       message: "Product Quantity Updated Successfully!",
     });
@@ -704,7 +753,7 @@ exports.increaseCommittedProductQuantity = async (req, res, next) => {
   let qty = data.quantity;
   let sku = data.sku;
   try {
-    const tempProduct = await Product.findOne({'_id': id})
+    const tempProduct = await Product.findOne({ '_id': id })
 
     await Product.findOneAndUpdate(
       { _id: id },
@@ -714,7 +763,7 @@ exports.increaseCommittedProductQuantity = async (req, res, next) => {
         }
       });
 
-    if(tempProduct.hasVariant){
+    if (tempProduct.hasVariant) {
       await Product.findOneAndUpdate(
         { _id: id },
         {
@@ -729,8 +778,8 @@ exports.increaseCommittedProductQuantity = async (req, res, next) => {
         });
     }
 
-    
-      
+
+
     res.status(200).json({
       message: "Product Quantity Updated Successfully!",
     });
@@ -750,7 +799,7 @@ exports.decreaseAvailableProductQuantity = async (req, res, next) => {
   let sku = data.sku;
 
   try {
-    const tempProduct = await Product.findOne({'_id': id})
+    const tempProduct = await Product.findOne({ '_id': id })
 
     await Product.findOneAndUpdate(
       { _id: id },
@@ -760,7 +809,7 @@ exports.decreaseAvailableProductQuantity = async (req, res, next) => {
         }
       });
 
-    if(tempProduct.hasVariant){
+    if (tempProduct.hasVariant) {
       await Product.findOneAndUpdate(
         { _id: id },
         {
@@ -775,8 +824,8 @@ exports.decreaseAvailableProductQuantity = async (req, res, next) => {
         });
     }
 
-    
-      
+
+
     res.status(200).json({
       message: "Product Quantity Updated Successfully!",
     });
@@ -795,7 +844,7 @@ exports.increaseAvailableProductQuantity = async (req, res, next) => {
   let qty = data.quantity;
   let sku = data.sku;
   try {
-    const tempProduct = await Product.findOne({'_id': id})
+    const tempProduct = await Product.findOne({ '_id': id })
 
     await Product.findOneAndUpdate(
       { _id: id },
@@ -805,7 +854,7 @@ exports.increaseAvailableProductQuantity = async (req, res, next) => {
         }
       });
 
-    if(tempProduct.hasVariant){
+    if (tempProduct.hasVariant) {
       await Product.findOneAndUpdate(
         { _id: id },
         {
@@ -820,8 +869,8 @@ exports.increaseAvailableProductQuantity = async (req, res, next) => {
         });
     }
 
-    
-      
+
+
     res.status(200).json({
       message: "Product Quantity Updated Successfully!",
     });
@@ -840,10 +889,10 @@ exports.getSelectedProductDetails = async (req, res, next) => {
     const selectedIds = req.body.selectedIds;
 
     const data = await Product.find({ _id: { $in: selectedIds } })
-    .populate('productType')
-    .populate("brand")
-    .populate("vendor")
-    .populate("variantFormArray.variantVendorName");
+      .populate('productType')
+      .populate("brand")
+      .populate("vendor")
+      .populate("variantFormArray.variantVendorName");
 
     res.status(200).json({
       data: data,

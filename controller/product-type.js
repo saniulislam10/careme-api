@@ -78,7 +78,6 @@ exports.getFilteredData = async (req, res, next) => {
         }
     
         const results = await dataDoc;
-        console.log(results);
         res.status(200).json({
           data: results
         });

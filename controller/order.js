@@ -472,8 +472,6 @@ exports.payPayment = async (req, res, next) => {
 
   try {
     const orderData = req.body;
-    console.log(orderData);
-
     orderId = orderData.orderId;
     paidAmount = orderData.paidAmount;
     paymentStatus =  orderData.paymentStatus;

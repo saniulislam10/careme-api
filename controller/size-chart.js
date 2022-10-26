@@ -37,7 +37,6 @@ exports.addNewSizeChart = async (req, res, next) => {
 exports.editNewSizeChart = async (req, res, next) => {
 
     const updatedData = req.body;
-    console.log("data",updatedData)
     const query = {_id: updatedData._id}
     const push = {$set: updatedData}
 

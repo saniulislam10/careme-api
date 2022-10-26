@@ -254,9 +254,6 @@ exports.removeFileFromArray = (req, res, next) => {
     // const baseurl = req.protocol + '://' + req.get("host");
     const baseurl = req.protocol + `${process.env.PRODUCTION_BUILD === 'true' ? 's://' : '://'}` + req.get("host");
     const data = req.body.data;
-
-    console.log(data)
-
     if (data instanceof Array) {
         const imagesPath = data;
         const success = [];
@@ -290,8 +287,6 @@ exports.removeFileMulti = (req, res, next) => {
     // const baseurl = req.protocol + '://' + req.get("host");
     const baseurl = req.protocol + `${process.env.PRODUCTION_BUILD === 'true' ? 's://' : '://'}` + req.get("host");
     const data = req.body;
-
-    console.log(data)
 
     if (data instanceof Array) {
         const imagesPath = [];
@@ -355,6 +350,7 @@ exports.removeSingleFile = (req, res, next) => {
     const baseurl = req.protocol + `${process.env.PRODUCTION_BUILD === 'true' ? 's://' : '://'}` + req.get("host");
     const { url } = req.body;
     const path = `.${url.replace(baseurl, '')}`;
+
 
     if (path !== null) {
         try {
