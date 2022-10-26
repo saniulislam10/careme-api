@@ -356,10 +356,12 @@ exports.removeSingleFile = (req, res, next) => {
         try {
             fs.unlinkSync(path);
             res.status(200).json({
+                success: true,
                 message: 'Success! Image Successfully Removed.'
             });
         } catch(err) {
             res.status(401).json({
+                success: false,
                 message: 'Error! No file Directory OR Something went wrong.'
             });
         }
