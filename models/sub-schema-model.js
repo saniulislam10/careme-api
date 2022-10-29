@@ -188,6 +188,27 @@ exports.comment = new Schema({
         required: true
     },
 },
+exports.openingTime = new Schema({
+    day: {
+        type: String,
+        required: false
+    },
+    isOpen: {
+        type: Boolean,
+        required: false
+    },
+    timing: [],
+}),
+exports.timeRange = new Schema({
+    startTime: {
+        type: String,
+        required: false
+    },
+    endTime: {
+        type: String,
+        required: false
+    }
+}),
     {
         _id: true
     })
