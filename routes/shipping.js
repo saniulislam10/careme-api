@@ -17,10 +17,12 @@ const router = express.Router();
 // Add
 router.post('/add', controller.add);
 router.get('/get-all', controller.getAll);
-router.put('/edit-by-id', controller.editById);
+router.put('/edit', controller.editById);
 router.post('/get-filtered-data', controller.getFilteredData);
 router.delete('/delete-by-id/:id', checkAdminAuth, controller.deleteById);
 
+router.post('/add-profile', controller.addProfile);
+router.get('/get-all-profile', controller.getAllProfile);
 
 // Export All router..
 module.exports = router;

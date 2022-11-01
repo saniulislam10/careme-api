@@ -17,6 +17,8 @@ router.post('/add-thana',checkIpWhitelist,checkAdminAuth, controller.addThana);
 router.get('/get-all-thana', controller.getAllThana);
 router.get('/get-thana-by-thana-id/:thanaId', controller.getThanaByThanaId);
 router.get('/get-all-thanas-by-city-id/:cityId', controller.getAllThanasByCityId);
+router.get('/get-all-thanas-by-zila-id/:zilaId', controller.getAllThanasByZilaId);
+router.get('/get-thanas-count/:zilaId', controller.getThanasCount);
 
 router.put('/edit-thana-by-thana',checkIpWhitelist,checkAdminAuth, controller.editThanaData);
 router.delete('/delete-thana-by-id/:thanaId',checkIpWhitelist,checkAdminAuth, controller.deleteThanaByThanaId);

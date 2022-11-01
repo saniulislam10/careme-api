@@ -197,15 +197,26 @@ exports.openingTime = new Schema({
         type: Boolean,
         required: false
     },
-    timing: [],
+    timing: [
+        {
+            startTime: {
+                type: Date,
+                required: false
+            },
+            endTime: {
+                type: Date,
+                required: false
+            }
+        }
+    ],
 }),
 exports.timeRange = new Schema({
     startTime: {
-        type: String,
+        type: Date,
         required: false
     },
     endTime: {
-        type: String,
+        type: Date,
         required: false
     }
 }),

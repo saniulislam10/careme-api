@@ -45,6 +45,10 @@ const schema = new Schema({
         type: Number,
         required: false
     },
+    preOrderDeliveryOption:{
+        type: String,
+        required: false
+    },
     preOrderDeliveryFrom: {
         type: Number,
         required: false

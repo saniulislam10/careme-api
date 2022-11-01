@@ -1,5 +1,6 @@
 // Require Post Schema from Model..
 const Shipping = require('../models/Shipping');
+const ShippingProfile = require('../models/ShippingProfile');
 
 exports.add = async (req, res, next) => {
   try {
@@ -21,11 +22,49 @@ exports.add = async (req, res, next) => {
       next(err);
   }
 };
+exports.addProfile = async (req, res, next) => {
+  try {
+
+      let data = req.body;
+      console.log(data);
+      let shipping = new ShippingProfile(data);
+      await shipping.save();
+
+      res.status(200).json({
+          message: "Shipping added successfully",
+      });
+  } catch (err) {
+      console.log(err);
+      if (!err.statusCode) {
+          err.statusCode = 500;
+          err.message = "Something went wrong on database operation!";
+      }
+      next(err);
+  }
+};
 
 exports.getAll = async (req, res, next) => {
     try {
 
         const data = await Shipping.find();
+
+        res.status(200).json({
+            data: data,
+            message: "Shippings fetched successfully",
+        });
+    } catch (err) {
+        console.log(err);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+            err.message = "Something went wrong on database operation!";
+        }
+        next(err);
+    }
+};
+exports.getAllProfile = async (req, res, next) => {
+    try {
+
+        const data = await ShippingProfile.find();
 
         res.status(200).json({
             data: data,
@@ -96,9 +135,8 @@ exports.editById = async (req, res, next) => {
     try {
 
         let updatedData = req.body;
-        const data = Shipping.findOne({_id: updatedData._id});
-        const finalData = {...updatedData, ...{password: data.password}}
-        await Shipping.updateOne({_id: updatedData._id}, {$set: updatedData})
+        console.log(updatedData);
+        await Shipping.findOneAndUpdate({_id: updatedData._id}, {$set: updatedData})
 
         res.status(200).json({
             message: "Shipping edited successfully",

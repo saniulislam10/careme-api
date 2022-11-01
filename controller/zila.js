@@ -47,7 +47,8 @@ exports.getAllZila = async (req, res, next) => {
         return;
     }
 
-    const zila = await Zila.find()
+    const zila = await Zila.find();
+
     try {
         res.status(200).json({
             data: zila,

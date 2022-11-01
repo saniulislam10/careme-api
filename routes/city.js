@@ -18,6 +18,7 @@ router.post('/add-city',checkIpWhitelist,checkAdminAuth, controller.addCity);
 router.get('/get-all-city', controller.getAllCity);
 router.get('/get-city-by-city-id/:cityId', controller.getCityByCitytId);
 router.get('/get-city-by-zila-id/:zilaId', controller.getAllCityByZilaId);
+// router.get('/get-city-count/:zilaId', controller.getAllCityCount);
 router.put('/edit-city-by-city',checkIpWhitelist,checkAdminAuth, controller.editCityData);
 router.delete('/delete-city-by-id/:cityId',checkIpWhitelist,checkAdminAuth, controller.deleteCityByCityId);
 

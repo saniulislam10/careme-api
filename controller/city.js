@@ -75,10 +75,42 @@ exports.getAllCityByZilaId = async (req, res, next) => {
 
     const zilaId = req.params.zilaId;
     const city = await City.find({zilaname: zilaId})
+    const count = await City.countDocuments({zilaname: zilaId})
 
     try {
         res.status(200).json({
             data: city,
+            count: count,
+            message: 'All City Fetched Successfully',
+        });
+    } catch (err) {
+        console.log(err)
+        if (!err.statusCode) {
+            err.statusCode = 500;
+            err.message = 'Something went wrong on database operation!'
+        }
+        next(err);
+    }
+}
+
+exports.getAllCityCount = async (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        const error = new Error('Input Validation Error! Please complete required information.');
+        error.statusCode = 422;
+        error.data = errors.array();
+        next(error)
+        return;
+    }
+
+    const zilaId = req.params.zilaId;
+    const count = await City.countDocuments({zilaname: zilaId})
+
+    try {
+        res.status(200).json({
+            count: count,
+            message: 'All City Fetched Successfully',
         });
     } catch (err) {
         console.log(err)

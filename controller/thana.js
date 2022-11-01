@@ -117,6 +117,65 @@ exports.getAllThanasByCityId = async (req, res, next) => {
         next(err);
     }
 }
+exports.getAllThanasByZilaId = async (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        const error = new Error('Input Validation Error! Please complete required information.');
+        error.statusCode = 422;
+        error.data = errors.array();
+        next(error)
+        return;
+    }
+
+    const zilaId = req.params.zilaId;
+    const thana = await Thana.find({zilaname: zilaId})
+    const count = await Thana.countDocuments({zilaname: zilaId})
+
+    try {
+        res.status(200).json({
+            data: thana,
+            count: count,
+            message: 'All thana fecthed successfully',
+        });
+    } catch (err) {
+        console.log(err)
+        if (!err.statusCode) {
+            err.statusCode = 500;
+            err.message = 'Something went wrong on database operation!'
+        }
+        next(err);
+    }
+}
+exports.getThanasCount = async (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        const error = new Error('Input Validation Error! Please complete required information.');
+        error.statusCode = 422;
+        error.data = errors.array();
+        next(error)
+        return;
+    }
+
+    const zilaId = req.params.zilaId;
+    const count = await Thana.countDocuments({zilaname: zilaId})
+
+    try {
+        res.status(200).json({
+            data: thana,
+            count: count,
+            message: 'All thana fecthed successfully',
+        });
+    } catch (err) {
+        console.log(err)
+        if (!err.statusCode) {
+            err.statusCode = 500;
+            err.message = 'Something went wrong on database operation!'
+        }
+        next(err);
+    }
+}
 
 exports.editThanaData = async (req, res, next) => {
 
