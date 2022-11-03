@@ -22,7 +22,10 @@ router.post('/get-filtered-data', controller.getFilteredData);
 router.delete('/delete-by-id/:id', checkAdminAuth, controller.deleteById);
 
 router.post('/add-profile', controller.addProfile);
+router.put('/edit-profile', controller.editProfile);
 router.get('/get-all-profile', controller.getAllProfile);
+router.get('/get-profile-by-id/:id', controller.getProfileById);
+router.delete('/delete-profile-by-id/:id', checkAdminAuth, controller.deleteProfileById);
 
 // Export All router..
 module.exports = router;

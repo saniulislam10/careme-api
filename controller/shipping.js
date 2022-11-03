@@ -46,7 +46,8 @@ exports.addProfile = async (req, res, next) => {
 exports.getAll = async (req, res, next) => {
     try {
 
-        const data = await Shipping.find();
+        const data = await Shipping.find()
+        .populate('allProductProfile');
 
         res.status(200).json({
             data: data,
@@ -139,7 +140,44 @@ exports.editById = async (req, res, next) => {
         await Shipping.findOneAndUpdate({_id: updatedData._id}, {$set: updatedData})
 
         res.status(200).json({
-            message: "Shipping edited successfully",
+            message: "Shipping Method edited successfully",
+        });
+    } catch (err) {
+        console.log(err);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+            err.message = "Something went wrong on database operation!";
+        }
+        next(err);
+    }
+};
+exports.editProfile = async (req, res, next) => {
+    try {
+
+        let updatedData = req.body;
+        await ShippingProfile.findOneAndUpdate({_id: updatedData._id}, {$set: updatedData})
+
+        res.status(200).json({
+            message: "Shipping Profile edited successfully",
+        });
+    } catch (err) {
+        console.log(err);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+            err.message = "Something went wrong on database operation!";
+        }
+        next(err);
+    }
+};
+exports.getProfileById = async (req, res, next) => {
+    try {
+
+        const id = req.params.id;
+        const data = await ShippingProfile.findOne({_id: id})
+
+        res.status(200).json({
+            data: data,
+            message: "Shipping Fetched successfully",
         });
     } catch (err) {
         console.log(err);
@@ -155,6 +193,24 @@ exports.deleteById = async (req, res, next) => {
 
         let id = req.params.id;
         await Shipping.deleteOne({_id: id});
+
+        res.status(200).json({
+            message: "Shipping deleted successfully",
+        });
+    } catch (err) {
+        console.log(err);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+            err.message = "Something went wrong on database operation!";
+        }
+        next(err);
+    }
+};
+exports.deleteProfileById = async (req, res, next) => {
+    try {
+
+        let id = req.params.id;
+        await ShippingProfile.deleteOne({_id: id});
 
         res.status(200).json({
             message: "Shipping deleted successfully",

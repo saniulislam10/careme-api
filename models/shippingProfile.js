@@ -7,13 +7,43 @@ const schema = new Schema({
         type: String,
         required: true
     },
-    chooseProduct: {
-        type: String,
-        required: false
-    },
-    selectedCategories: [],
-    selectedZones: [],
-    shippingMethods: []
+    shippingZonesArray: [
+        {
+            zones: [
+                // {
+                //     zoneId: {
+                //         type: Schema.Types.ObjectId,
+                //         ref: 'zila',
+                //         required: true
+                //     },
+                //     name: {
+                //         type: String,
+                //         required: false
+                //     },
+                // }
+            ],
+            name: {
+                type: String,
+                required: true
+            },
+            chooseRateType: {
+                type: String,
+                required: true
+            },
+            flatRate: {
+                type: Number,
+                required: false
+            },
+            baseRate: {
+                type: Number,
+                required: false
+            },
+            perKgRate: {
+                type: Number,
+                required: false
+            },
+        }
+    ]
 
 }, {
     timestamps: true

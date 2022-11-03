@@ -61,9 +61,29 @@ const schema = new Schema({
         type: Boolean,
         required: true
     },
-    preOrderDeliveryTimesArray: [
-        subSchema.timeRange
-    ],
+    allProductEnable: {
+        type: Boolean,
+        required: true
+    },
+    catEnable: {
+        type: Boolean,
+        required: true
+    },
+    productEnable: {
+        type: Boolean,
+        required: true
+    },
+    categoryArray: [{
+        type: Schema.Types.ObjectId,
+        ref: 'ProductType',
+        required: false
+    }],
+    allProductProfile: {
+        type: Schema.Types.ObjectId,
+        ref: 'ShippingProfile',
+        required: false
+    },
+    
 
 }, {
     timestamps: true
