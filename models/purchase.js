@@ -93,6 +93,11 @@ const schema = new Schema({
     totalAmount: {
         type: Number,
         required: false
+    },
+    admin: {
+        type: Schema.Types.ObjectId,
+        ref: 'Admin',
+        required: false
     }
 }, {
     timestamps: true
