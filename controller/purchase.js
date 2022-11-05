@@ -6,6 +6,17 @@ const UniqueId = require("../models/unique-id");
 exports.addSingle = async (req, res, next) => {
   try {
     const purchaseData = req.body;
+    purchaseData.products.forEach( async m  =>  {
+      console.log(m);
+      await Product.findOneAndUpdate(
+        { _id: m.productData._id },
+        {
+          $set: {
+            costPrice: m.purchasePrice,
+          }
+        }
+      ).exec();
+    })
     // Increment Order Id Unique
     const incPurchase = await UniqueId.findOneAndUpdate(
       {},
