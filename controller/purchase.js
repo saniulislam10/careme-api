@@ -206,7 +206,6 @@ exports.updateRecieved = async (req, res, next) => {
   const data = req.body;
   try {
     let purchaseData = await Model.findOne({ _id: data._id });
-    console.log(purchaseData);
     purchaseData.products[data.index].recieved += data.recieved;
     purchaseData.products[data.index].message = data.message;
     let status = 4;
