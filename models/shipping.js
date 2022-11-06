@@ -45,7 +45,7 @@ const schema = new Schema({
         type: Number,
         required: false
     },
-    preOrderDeliveryOption:{
+    preOrderDeliveryOption: {
         type: String,
         required: false
     },
@@ -83,7 +83,21 @@ const schema = new Schema({
         ref: 'ShippingProfile',
         required: false
     },
-    
+    catFormArray: [
+        {
+            category: {
+                type: Schema.Types.ObjectId,
+                ref: 'ProductType',
+                required: false
+            },
+            catShipProfile: {
+                type: Schema.Types.ObjectId,
+                ref: 'ShippingProfile',
+                required: false
+            }
+        }
+    ]
+
 
 }, {
     timestamps: true

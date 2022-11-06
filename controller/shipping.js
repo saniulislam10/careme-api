@@ -47,7 +47,8 @@ exports.getAll = async (req, res, next) => {
     try {
 
         const data = await Shipping.find()
-        .populate('allProductProfile');
+        .populate('allProductProfile')
+        .populate("catFormArray.catShipProfile")
 
         res.status(200).json({
             data: data,
